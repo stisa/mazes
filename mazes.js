@@ -7,8 +7,11 @@ function $extend(from, fields) {
 	return proto;
 }
 var Cell = function(nome,riga,colonna) {
+	this.red = new phoenix_Color(1,0,0);
 	this.white = new phoenix_Color(1,1,1);
 	this.black = new phoenix_Color(0,0,0);
+	this.isLast = false;
+	this.isFirst = false;
 	this.visited = false;
 	this.row = riga;
 	this.column = colonna;
@@ -47,7 +50,14 @@ Cell.prototype = {
 	,drawCell: function(cellSize,maze_pos) {
 		var colore = this.white;
 		if(this.visited == true) colore = this.black;
-		var box = Luxe.draw.box({ x : maze_pos.y + this.column * (cellSize + 2), y : maze_pos.x + this.row * (cellSize + 2), w : cellSize, h : cellSize, color : colore});
+		if(this.isFirst || this.isLast) colore = this.red;
+		var box = Luxe.draw.box({ x : maze_pos.x + this.column * (cellSize.x + 2), y : maze_pos.y + this.row * (cellSize.y + 2), w : cellSize.x, h : cellSize.y, color : colore});
+		if(this.isFirst) {
+			haxe_Log.trace(maze_pos.y,{ fileName : "Cell.hx", lineNumber : 87, className : "Cell", methodName : "drawCell"});
+			haxe_Log.trace(this.column,{ fileName : "Cell.hx", lineNumber : 88, className : "Cell", methodName : "drawCell"});
+			haxe_Log.trace(cellSize.x,{ fileName : "Cell.hx", lineNumber : 89, className : "Cell", methodName : "drawCell"});
+			haxe_Log.trace(maze_pos.y + this.column * (cellSize.x + 2),{ fileName : "Cell.hx", lineNumber : 90, className : "Cell", methodName : "drawCell"});
+		}
 		return box;
 	}
 	,__class__: Cell
@@ -495,7 +505,6 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		Luxe.renderer.clear_color.rgb(14870242);
 		this.createButtons();
 		this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 200) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
-		haxe_Log.trace(this.gridSize,{ fileName : "Main.hx", lineNumber : 29, className : "Main", methodName : "ready"});
 		Luxe.input.bind_mouse("click",1);
 		Luxe.input.bind_key("click",snow_system_input_Keycodes.space);
 	}
@@ -527,7 +536,7 @@ Main.prototype = $extend(luxe_Game.prototype,{
 			} else if(e.type == luxe_InputType.keys) {
 				if(this.touch_once == false) {
 					this.touch_once = true;
-					this.maze = new Maze(this.gridSize,this.cellSize,new phoenix_Vector(48,48));
+					this.maze = new Maze(this.gridSize,this.cellSize,new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y));
 				}
 			}
 			break;
@@ -540,7 +549,7 @@ var Maze = function(gridSize,dimCella,posiz) {
 	this.boxArray = [];
 	this.height = gridSize.y | 0;
 	this.width = gridSize.x | 0;
-	this.cellSize = dimCella.x | 0;
+	this.cellSize = dimCella;
 	this.pos = posiz;
 	this.cells = new haxe_ds_StringMap();
 	var _g1 = 1;
@@ -570,7 +579,10 @@ Maze.prototype = {
 		var name;
 		name = (randRow == null?"null":"" + randRow) + "-" + (randColumn == null?"null":"" + randColumn);
 		var cell = this.cells.get(name);
-		if(cell.visited == false && cell.isBorder == false) this.makePath(cell); else this.startPath();
+		if(cell.visited == false && cell.isBorder == false) {
+			cell.isFirst = true;
+			this.makePath(cell);
+		} else this.startPath();
 	}
 	,makePath: function(fromCell) {
 		fromCell.visit();
@@ -585,11 +597,16 @@ Maze.prototype = {
 			var nextCell1 = this.track.pop();
 			this.makePath(nextCell1);
 		} else if(this.track.length == 0) {
-			haxe_Log.trace("Completed",{ fileName : "Maze.hx", lineNumber : 76, className : "Maze", methodName : "makePath"});
+			haxe_Log.trace("Completed",{ fileName : "Maze.hx", lineNumber : 75, className : "Maze", methodName : "makePath"});
 			this.completed();
 		}
 	}
 	,completed: function() {
+		var randColumn = Math.ceil(Math.random() * this.width);
+		var randRow = Math.ceil(Math.random() * this.height);
+		var name;
+		name = (randRow == null?"null":"" + randRow) + "-" + (randColumn == null?"null":"" + randColumn);
+		this.cells.get(name).isLast = true;
 		var $it0 = this.cells.iterator();
 		while( $it0.hasNext() ) {
 			var cell = $it0.next();
@@ -598,7 +615,7 @@ Maze.prototype = {
 		}
 	}
 	,reset: function() {
-		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 93, className : "Maze", methodName : "reset"});
+		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 97, className : "Maze", methodName : "reset"});
 		var _g = 0;
 		var _g1 = this.boxArray;
 		while(_g < _g1.length) {
