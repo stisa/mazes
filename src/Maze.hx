@@ -4,12 +4,13 @@ import luxe.Sprite;
 import luxe.Color;
 
 class Maze  {
+
   public var width : Int;
   public var height : Int;
-  var cellSize : Int;
-  var track : Array<Cell>;
   public var cells : Map<String,Cell>;
   public var pos : Vector;
+  var cellSize : Int;
+  var track : Array<Cell>;
 
   public function new ( righe:Int, colonne:Int, dimCella:Int, posiz:Vector){
 
@@ -20,7 +21,9 @@ class Maze  {
 
     cells = new Map();
     for( i in 1...(height+1)){ // Create the grid
+
       for ( k in 1...(width+1)) {
+
         var c = new Cell( '$i-$k', i, k );
         cells['$i-$k'] = c;
       }
@@ -32,6 +35,7 @@ class Maze  {
   } // new
 
   public function startPath() {
+
     var randColumn : Int = Math.ceil(Math.random()*width);
     var randRow : Int = Math.ceil(Math.random()*height);
     var name : String = Std.string(randRow)+"-"+Std.string(randColumn);
@@ -41,7 +45,8 @@ class Maze  {
     if ( cell.visited == false && cell.isBorder == false ) {
 
       makePath(cell);
-    } else {
+    }
+    else {
 
       startPath();
     }
@@ -62,30 +67,33 @@ class Maze  {
       makePath(nextCell); // continue the path
 
     } else if ( track.length>0) { // are there any previously visited cells?
-      //trace("Backtracking");
-      var nextCell = track.pop(); // return to the last element that had neighbours
+
+      var nextCell = track.pop(); // the last element that we visited
       makePath(nextCell);
-    } else if ( track.length == 0) {
+    }
+    else if ( track.length == 0) {
+
       trace("Completed");
       completed();
     }
-
   } // makePath
+
   var boxArray : Array<phoenix.geometry.QuadGeometry> = [];
   function completed(){
+
     for ( cell in cells ) {
+
         var b = cell.drawCell(cellSize,pos);
         boxArray.push(b);
     }
-
   } // completed
 
   public function reset() {
+
     trace("Resetting");
     for ( box in boxArray ) {
-      box.drop();
+
+      box.drop(); // remove the box from the batcher
     }
-
   }
-
 } // Maze

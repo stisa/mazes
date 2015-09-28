@@ -3,6 +3,7 @@ import luxe.Color;
 import luxe.Vector;
 
 class Cell {
+
   public var name : String;
   public var row : Int;
   public var column : Int;
@@ -32,7 +33,7 @@ class Cell {
     var nameSx : String = '$row-'+Std.string(column-1);
     var nameDx : String = '$row-'+Std.string(column+1);
 
-    // neighbour cells 1 cells away
+    // neighbour cells 1 cell away
     var nameSopra2 : String = Std.string(row-2)+'-$column';
     var nameSotto2 : String = Std.string(row+2)+'-$column';
     var nameSx2 : String = '$row-'+Std.string(column-2);
@@ -41,18 +42,21 @@ class Cell {
     var nameArray : Array<Array<String>> = [[nameSopra,nameSopra2],[nameSotto,nameSotto2],[nameSx,nameSx2],[nameDx,nameDx2]];
     //trace(nameArray);//
     for (name in nameArray) {
+
       var cellD1 : Cell = cells[name[0]];
       var cellD2 : Cell = cells[name[1]];
       if ( cellD2!= null && cellD2.visited == false) {
+
         var cellArray : Array<Cell> = [cellD1, cellD2];
         neighbours.push(cellArray);
       }
     }
-    return neighbours;
 
+    return neighbours;
   }
 
   public function visit() {
+
     visited = true;
   }
 
@@ -63,6 +67,7 @@ class Cell {
 
     var colore : Color = white;
     if ( visited == true ) {
+
       colore = black;
     }
     var box = Luxe.draw.box({
@@ -74,5 +79,4 @@ class Cell {
     });
     return box;
   }
-
 }
