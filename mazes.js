@@ -480,6 +480,7 @@ luxe_Game.prototype = $extend(luxe_Emitter.prototype,{
 	,__class__: luxe_Game
 });
 var Main = function() {
+	this.cellSize = new phoenix_Vector(14,14);
 	this.touch_once = false;
 	luxe_Game.call(this);
 };
@@ -493,8 +494,13 @@ Main.prototype = $extend(luxe_Game.prototype,{
 	,ready: function() {
 		Luxe.renderer.clear_color.rgb(14870242);
 		this.createButtons();
+		this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 200) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
+		haxe_Log.trace(this.gridSize,{ fileName : "Main.hx", lineNumber : 29, className : "Main", methodName : "ready"});
 		Luxe.input.bind_mouse("click",1);
 		Luxe.input.bind_key("click",snow_system_input_Keycodes.space);
+	}
+	,onwindowsized: function(e) {
+		Luxe.camera.set_center(Luxe.core.screen.get_mid());
 	}
 	,onkeyup: function(e) {
 		if(e.keycode == snow_system_input_Keycodes.escape) Luxe.shutdown();
@@ -504,8 +510,8 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		}
 	}
 	,createButtons: function() {
-		this.button = new luxe_Sprite({ name : "play", pos : new phoenix_Vector(340,1210), size : new phoenix_Vector(192,96), color : new phoenix_Color(0,0,0)});
-		this.resetButton = new luxe_Sprite({ name : "reset", pos : new phoenix_Vector(600,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(1,0.2,0.2)});
+		this.button = new luxe_Sprite({ name : "play", pos : new phoenix_Vector(240,1210), size : new phoenix_Vector(192,96), color : new phoenix_Color(0,0,0)});
+		this.resetButton = new luxe_Sprite({ name : "reset", pos : new phoenix_Vector(500,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(1,0.2,0.2)});
 	}
 	,oninputup: function(event_name,e) {
 		switch(event_name) {
@@ -513,7 +519,7 @@ Main.prototype = $extend(luxe_Game.prototype,{
 			if(e.type == luxe_InputType.mouse) {
 				if(this.touch_once == false && this.button.point_inside_AABB(e.mouse_event.pos)) {
 					this.touch_once = true;
-					this.maze = new Maze(67,43,14,new phoenix_Vector(48,48));
+					this.maze = new Maze(this.gridSize,this.cellSize,new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y));
 				} else if(this.resetButton.point_inside_AABB(e.mouse_event.pos)) {
 					this.maze.reset();
 					this.touch_once = false;
@@ -521,7 +527,7 @@ Main.prototype = $extend(luxe_Game.prototype,{
 			} else if(e.type == luxe_InputType.keys) {
 				if(this.touch_once == false) {
 					this.touch_once = true;
-					this.maze = new Maze(67,43,14,new phoenix_Vector(48,48));
+					this.maze = new Maze(this.gridSize,this.cellSize,new phoenix_Vector(48,48));
 				}
 			}
 			break;
@@ -530,11 +536,11 @@ Main.prototype = $extend(luxe_Game.prototype,{
 	,__class__: Main
 });
 Math.__name__ = ["Math"];
-var Maze = function(righe,colonne,dimCella,posiz) {
+var Maze = function(gridSize,dimCella,posiz) {
 	this.boxArray = [];
-	this.height = righe;
-	this.width = colonne;
-	this.cellSize = dimCella;
+	this.height = gridSize.y | 0;
+	this.width = gridSize.x | 0;
+	this.cellSize = dimCella.x | 0;
 	this.pos = posiz;
 	this.cells = new haxe_ds_StringMap();
 	var _g1 = 1;
@@ -579,7 +585,7 @@ Maze.prototype = {
 			var nextCell1 = this.track.pop();
 			this.makePath(nextCell1);
 		} else if(this.track.length == 0) {
-			haxe_Log.trace("Completed",{ fileName : "Maze.hx", lineNumber : 69, className : "Maze", methodName : "makePath"});
+			haxe_Log.trace("Completed",{ fileName : "Maze.hx", lineNumber : 76, className : "Maze", methodName : "makePath"});
 			this.completed();
 		}
 	}
@@ -592,7 +598,7 @@ Maze.prototype = {
 		}
 	}
 	,reset: function() {
-		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 84, className : "Maze", methodName : "reset"});
+		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 93, className : "Maze", methodName : "reset"});
 		var _g = 0;
 		var _g1 = this.boxArray;
 		while(_g < _g1.length) {
