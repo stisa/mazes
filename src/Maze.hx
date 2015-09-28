@@ -7,16 +7,16 @@ class Maze  {
 
   public var width : Int;
   public var height : Int;
+  var cellSize : Int;
   public var cells : Map<String,Cell>;
   public var pos : Vector;
-  var cellSize : Int;
   var track : Array<Cell>;
 
-  public function new ( righe:Int, colonne:Int, dimCella:Int, posiz:Vector){
+  public function new ( gridSize: Vector, dimCella: Vector, posiz:Vector){
 
-    height = righe; // number of rows
-    width = colonne; // number of height
-    cellSize = dimCella;
+    height = Std.int(gridSize.y); // number of rows
+    width = Std.int(gridSize.x); // number of height
+    cellSize = Std.int(dimCella.x);
     pos = posiz;
 
     cells = new Map();
