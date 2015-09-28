@@ -304,11 +304,11 @@ LuxeApp.main = function() {
 	LuxeApp._conf.window.fullscreen = false;
 	LuxeApp._conf.window.resizable = true;
 	LuxeApp._conf.window.borderless = false;
-	LuxeApp._conf.window.title = "dfsmaze";
+	LuxeApp._conf.window.title = "Mazes";
 	LuxeApp._snow = new snow_Snow();
 	LuxeApp._game = new Main();
 	LuxeApp._core = new luxe_Core(LuxeApp._game,LuxeApp._conf);
-	var _snow_config = { has_loop : true, config_path : "config.json", app_package : "it.stisa.dfsmaze"};
+	var _snow_config = { has_loop : true, config_path : "config.json", app_package : "it.stisa.mazes"};
 	LuxeApp._snow.init(_snow_config,LuxeApp._core);
 };
 var luxe_Emitter = function() {
