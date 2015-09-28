@@ -10,6 +10,8 @@ class Cell {
   public var visited : Bool = false;
   public var neighbours : Array<Array<Cell>>;
   public var isBorder : Bool;
+  public var isFirst : Bool = false;
+  public var isLast : Bool = false;
 
   public function new ( nome: String, riga: Int, colonna: Int) {
 
@@ -62,21 +64,31 @@ class Cell {
 
   var black = new Color(0,0,0);
   var white = new Color(1,1,1);
+  var red = new Color(1,0,0);
 
-  public function drawCell(cellSize:Int, maze_pos: Vector) {
+  public function drawCell(cellSize: Vector, maze_pos: Vector) {
 
     var colore : Color = white;
     if ( visited == true ) {
 
       colore = black;
     }
+    if ( isFirst || isLast ){
+      colore = red;
+    }
     var box = Luxe.draw.box({
-      x: maze_pos.y+column*(cellSize+2),
-      y: maze_pos.x+row*(cellSize+2),
-      w: cellSize,
-      h: cellSize,
+      x: maze_pos.x+column*(cellSize.x+2),
+      y: maze_pos.y+row*(cellSize.y+2),
+      w: cellSize.x,
+      h: cellSize.y,
       color : colore
     });
+    if (isFirst) {
+      trace(maze_pos.y);
+      trace(column);
+      trace(cellSize.x);
+      trace(maze_pos.y+column*(cellSize.x+2));
+    }
     return box;
   }
 }

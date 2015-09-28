@@ -7,7 +7,7 @@ class Maze  {
 
   public var width : Int;
   public var height : Int;
-  var cellSize : Int;
+  var cellSize : Vector;
   public var cells : Map<String,Cell>;
   public var pos : Vector;
   var track : Array<Cell>;
@@ -16,9 +16,8 @@ class Maze  {
 
     height = Std.int(gridSize.y); // number of rows
     width = Std.int(gridSize.x); // number of height
-    cellSize = Std.int(dimCella.x);
+    cellSize = dimCella;
     pos = posiz;
-
     cells = new Map();
     for( i in 1...(height+1)){ // Create the grid
 
@@ -43,7 +42,7 @@ class Maze  {
     var cell : Cell = cells[name];
 
     if ( cell.visited == false && cell.isBorder == false ) {
-
+      cell.isFirst = true;
       makePath(cell);
     }
     else {
@@ -80,6 +79,11 @@ class Maze  {
 
   var boxArray : Array<phoenix.geometry.QuadGeometry> = [];
   function completed(){
+    var randColumn : Int = Math.ceil(Math.random()*width);
+    var randRow : Int = Math.ceil(Math.random()*height);
+    var name : String = Std.string(randRow)+"-"+Std.string(randColumn);
+
+    cells[name].isLast = true;
 
     for ( cell in cells ) {
 

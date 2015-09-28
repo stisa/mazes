@@ -26,7 +26,6 @@ class Main extends luxe.Game {
     createButtons();
 
     gridSize = new Vector( (Luxe.screen.w-200)/cellSize.x, ( Luxe.screen.h-340 )/cellSize.y );
-    trace(gridSize);
     Luxe.input.bind_mouse('click', MouseButton.left);
     Luxe.input.bind_key('click', Key.space);
   } //ready
@@ -92,7 +91,7 @@ class Main extends luxe.Game {
           if( touch_once == false ) {
 
             touch_once = true;
-            maze = new Maze( gridSize, cellSize, new Vector(48,48));
+            maze = new Maze( gridSize, cellSize, new Vector(4*cellSize.x,4*cellSize.y) );
           }
         }
       //click
