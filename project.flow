@@ -1,0 +1,42 @@
+{
+
+  luxe:{
+    window: {
+      width:720,
+      height:1280,
+      title:'Mazes',
+      fullscreen:false,
+      resizable:true,
+      borderless:false
+    }
+  },
+
+  project : {
+    name : 'mazes',
+    version : '0.0.3',
+    author : 'stisa',
+
+    app : {
+      name : 'mazes',
+      package : 'it.stisa.mazes',
+      mobile: {
+        orientation: 'portrait',
+        android: {
+          sdk_target: '22'
+        },
+      }
+    },
+
+    build : {
+      dependencies : {
+        luxe : '*',
+      }
+    },
+
+    files : {
+      assets : 'assets/'
+    }
+
+  }
+
+}
