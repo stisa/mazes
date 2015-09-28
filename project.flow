@@ -30,6 +30,12 @@
     build : {
       dependencies : {
         luxe : '*',
+      },
+      post : {
+       priority : 1,
+       name : 'gh-pages',
+       desc : 'copy bin/web to gh-pages',
+       script : './hooks/post.js',
       }
     },
 

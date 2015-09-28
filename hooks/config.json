@@ -1,0 +1,7 @@
+{
+	"dirs": {
+	  "gh_pages": "gh-pages",
+	  "bin" : "bin/web",
+	  "git_files" : "hooks/git_files"
+  	}
+}
