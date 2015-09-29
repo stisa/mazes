@@ -8,7 +8,7 @@ function $extend(from, fields) {
 }
 var Cell = function(nome,riga,colonna,maze_righe,maze_colonne) {
 	this.isLast = false;
-	this.isFirst = false;
+	this.isStart = false;
 	this.visited = false;
 	this.row = riga;
 	this.column = colonna;
@@ -45,9 +45,9 @@ Cell.prototype = {
 		this.visited = true;
 	}
 	,drawCell: function(cellSize,maze_pos) {
-		var colore = new phoenix_Color(1,1,1);
-		if(this.visited) colore = new phoenix_Color(0,0,0);
-		if(this.isFirst) colore = new phoenix_Color(1,0,0);
+		var colore = new phoenix_Color(0,0,0);
+		if(this.visited) colore = new phoenix_Color(1,1,1);
+		if(this.isStart) colore = new phoenix_Color(1,0,0);
 		if(this.isLast) colore = new phoenix_Color(0,1,0);
 		this.box = Luxe.draw.box({ x : maze_pos.x + this.column * (cellSize.x + 2), y : maze_pos.y + this.row * (cellSize.y + 2), w : cellSize.x, h : cellSize.y, color : colore});
 		return this.box;
@@ -593,11 +593,7 @@ Maze.prototype = {
 		var name;
 		name = (randRow == null?"null":"" + randRow) + "-" + (randColumn == null?"null":"" + randColumn);
 		var cell = this.cells.get(name);
-		if(cell.visited == false && cell.isBorder == false) {
-			cell.isFirst = true;
-			this.startCell = cell;
-			this.makePath(cell);
-		} else this.startPath();
+		if(cell.visited == false && cell.isBorder == false) this.makePath(cell); else this.startPath();
 	}
 	,makePath: function(fromCell) {
 		fromCell.visit();
@@ -612,7 +608,7 @@ Maze.prototype = {
 			var nextCell1 = this.track.pop();
 			this.makePath(nextCell1);
 		} else if(this.track.length == 0) {
-			haxe_Log.trace("Completed",{ fileName : "Maze.hx", lineNumber : 77, className : "Maze", methodName : "makePath"});
+			haxe_Log.trace("Completed",{ fileName : "Maze.hx", lineNumber : 75, className : "Maze", methodName : "makePath"});
 			this.completed();
 		}
 	}
@@ -622,6 +618,11 @@ Maze.prototype = {
 		var name;
 		name = (randRow == null?"null":"" + randRow) + "-" + (randColumn == null?"null":"" + randColumn);
 		this.cells.get(name).isLast = true;
+		randColumn = Math.ceil(Math.random() * this.width);
+		randRow = Math.ceil(Math.random() * this.height);
+		name = (randRow == null?"null":"" + randRow) + "-" + (randColumn == null?"null":"" + randColumn);
+		this.cells.get(name).isStart = true;
+		this.startCell = this.cells.get(name);
 		var $it0 = this.cells.iterator();
 		while( $it0.hasNext() ) {
 			var cell = $it0.next();
@@ -630,7 +631,7 @@ Maze.prototype = {
 		}
 	}
 	,reset: function() {
-		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 99, className : "Maze", methodName : "reset"});
+		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 104, className : "Maze", methodName : "reset"});
 		var _g = 0;
 		var _g1 = this.boxArray;
 		while(_g < _g1.length) {
@@ -1577,34 +1578,27 @@ Player.prototype = $extend(luxe_Visual.prototype,{
 		var currCell = this.pathArray[this.pathArray.length - 1];
 		switch(direction) {
 		case "left":
-			haxe_Log.trace(direction,{ fileName : "Player.hx", lineNumber : 49, className : "Player", methodName : "move"});
 			--this.column;
-			haxe_Log.trace(this.get_name() + (" " + this.row + "-" + this.column),{ fileName : "Player.hx", lineNumber : 51, className : "Player", methodName : "move"});
 			var next = this.maze.cells.get("" + this.row + "-" + this.column);
-			if(next != null && next.visited == false) this.pathArray.push(next); else ++this.column;
+			if(next != null && next.isLast == true) haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 52, className : "Player", methodName : "move"}); else if(next != null && next.visited == true) this.pathArray.push(next); else ++this.column;
 			break;
 		case "right":
-			haxe_Log.trace(direction,{ fileName : "Player.hx", lineNumber : 61, className : "Player", methodName : "move"});
 			++this.column;
-			haxe_Log.trace(this.get_name() + (" " + this.row + "-" + this.column),{ fileName : "Player.hx", lineNumber : 63, className : "Player", methodName : "move"});
 			var next1 = this.maze.cells.get("" + this.row + "-" + this.column);
-			if(next1 != null && next1.visited == false) this.pathArray.push(next1); else --this.column;
+			if(next1 != null && next1.isLast == true) haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 65, className : "Player", methodName : "move"}); else if(next1 != null && next1.visited == true) this.pathArray.push(next1); else --this.column;
 			break;
 		case "up":
-			haxe_Log.trace(direction,{ fileName : "Player.hx", lineNumber : 73, className : "Player", methodName : "move"});
 			--this.row;
-			haxe_Log.trace(this.get_name() + (" " + this.row + "-" + this.column),{ fileName : "Player.hx", lineNumber : 75, className : "Player", methodName : "move"});
 			var next2 = this.maze.cells.get("" + this.row + "-" + this.column);
-			if(next2 != null && next2.visited == false) this.pathArray.push(next2); else ++this.row;
+			if(next2 != null && next2.isLast == true) haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 78, className : "Player", methodName : "move"}); else if(next2 != null && next2.visited == true) this.pathArray.push(next2); else ++this.row;
 			break;
 		case "down":
-			haxe_Log.trace(direction,{ fileName : "Player.hx", lineNumber : 85, className : "Player", methodName : "move"});
 			++this.row;
-			haxe_Log.trace(this.get_name() + (" " + this.row + "-" + this.column),{ fileName : "Player.hx", lineNumber : 87, className : "Player", methodName : "move"});
 			var next3 = this.maze.cells.get("" + this.row + "-" + this.column);
-			if(next3 != null && next3.visited == false) this.pathArray.push(next3); else --this.row;
+			if(next3 != null && next3.isLast == true) haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 91, className : "Player", methodName : "move"}); else if(next3 != null && next3.visited == true) this.pathArray.push(next3); else --this.row;
 			break;
 		}
+		haxe_Log.trace(this.pathArray.length,{ fileName : "Player.hx", lineNumber : 101, className : "Player", methodName : "move"});
 		this.pathArray[this.pathArray.length - 1].box.set_color(new phoenix_Color(0.2,0.2,1));
 		this.pathArray[this.pathArray.length - 2].box.set_color(new phoenix_Color(0.2,0.2,0.6));
 	}
