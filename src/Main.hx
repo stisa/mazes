@@ -19,6 +19,10 @@ class Main extends luxe.Game {
   var mazeButton : Sprite;
   var playerButton : Sprite;
   var resetButton : Sprite;
+  var upButton : Sprite;
+  var downButton : Sprite;
+  var rightButton : Sprite;
+  var leftButton : Sprite;
 
   override function config(config:luxe.AppConfig) {
 
@@ -42,6 +46,11 @@ class Main extends luxe.Game {
     Luxe.input.bind_key('right', Key.key_d);
     Luxe.input.bind_key('up', Key.key_w);
     Luxe.input.bind_key('down', Key.key_s);
+
+    Luxe.input.bind_mouse('left', MouseButton.left);
+    Luxe.input.bind_mouse('right', MouseButton.left);
+    Luxe.input.bind_mouse('up', MouseButton.left);
+    Luxe.input.bind_mouse('down', MouseButton.left);
   } //ready
 
   override function onwindowsized ( e:WindowEvent ) {
@@ -69,21 +78,45 @@ class Main extends luxe.Game {
 
     mazeButton = new Sprite({
       name: "maze",
-      pos: new Vector(120,1210),
-      size: new Vector(96,96),
+      pos: new Vector(120,32),
+      size: new Vector(96,64),
       color: new Color(0,0,0)
     });
     playerButton = new Sprite({
       name: "player",
-      pos: new Vector(330,1210),
-      size: new Vector(96,96),
+      pos: new Vector(380,32),
+      size: new Vector(96,64),
       color: new Color(0.2,0.2,1)
     });
     resetButton = new Sprite({
       name: "reset",
-      pos: new Vector(600,1210),
-      size: new Vector(96,96),
+      pos: new Vector(600,32),
+      size: new Vector(96,64),
       color: new Color(1,0.2,0.2)
+    });
+    upButton = new Sprite({
+      name: "up",
+      pos: new Vector(260,1210),
+      size: new Vector(96,96),
+      color: new Color(0.5,0.2,0.2)
+    });
+    downButton = new Sprite({
+      name: "down",
+      pos: new Vector(440,1210),
+      size: new Vector(96,96),
+      color: new Color(0.5,0.2,0.2)
+    });
+    leftButton = new Sprite({
+      name: "left",
+      pos: new Vector(88,1210),
+      size: new Vector(96,96),
+      color: new Color(0.2,0.5,0.2)
+    });
+    rightButton = new Sprite({
+      name: "right",
+      pos: new Vector(632,1210),
+      size: new Vector(96,96),
+      color: new Color(0.2,0.5,0.2)
     });
   }
 
@@ -139,13 +172,26 @@ class Main extends luxe.Game {
 
       //click
       case 'left':
-        player.move(event_name);
+
+        if ( player != null && leftButton.point_inside_AABB(e.mouse_event.pos) ) {
+
+          player.move(event_name);
+        }
       case 'right':
-        player.move(event_name);
+        if ( player != null && rightButton.point_inside_AABB(e.mouse_event.pos) ) {
+
+          player.move(event_name);
+        }
       case 'up':
-        player.move(event_name);
+        if ( player != null && upButton.point_inside_AABB(e.mouse_event.pos) ) {
+
+          player.move(event_name);
+        }
       case 'down':
-        player.move(event_name);
+        if ( player != null && downButton.point_inside_AABB(e.mouse_event.pos) ) {
+
+          player.move(event_name);
+        }
     } //switch
   }
 } //Main

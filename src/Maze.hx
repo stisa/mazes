@@ -84,7 +84,7 @@ class Maze  {
     var name : String = Std.string(randRow)+"-"+Std.string(randColumn);
 
     cells[name].isLast = true;
-
+    
     randColumn = Math.ceil(Math.random()*width);
     randRow = Math.ceil(Math.random()*height);
     name = Std.string(randRow)+"-"+Std.string(randColumn);
