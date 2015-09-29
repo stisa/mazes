@@ -46,11 +46,12 @@ class Player extends Visual {
       var currCell = pathArray[pathArray.length -1]; // current head cell
       switch(direction){
         case 'left':
-          trace(direction);
           --column;
-          trace(name+' $row-$column');
           var next : Cell =maze.cells['$row-$column'];
-          if ( next != null && next.visited==false ){
+          if ( next != null && next.isLast ==true ) {
+            trace("Goal Reached");
+          }
+          else if ( next != null && next.visited==true ){
             pathArray.push(next); //update head cell
           }
           else {
@@ -58,11 +59,12 @@ class Player extends Visual {
           }
           //Actuate.tween(this.pos,0.2,{ x: currPos.x-maze.cellSize.x-2});
         case 'right':
-          trace(direction);
           ++column;
-          trace(name+' $row-$column');
           var next : Cell =maze.cells['$row-$column'];
-          if ( next != null && next.visited==false ){
+          if ( next != null && next.isLast ==true ) {
+            trace("Goal Reached");
+          }
+          else if ( next != null && next.visited==true ){
             pathArray.push(next);
           }
           else {
@@ -70,11 +72,12 @@ class Player extends Visual {
           }
           //Actuate.tween(this.pos,0.2,{ x: currPos.x+maze.cellSize.x+2});
         case 'up':
-          trace(direction);
           --row;
-          trace(name+' $row-$column');
           var next : Cell =maze.cells['$row-$column'];
-          if ( next != null && next.visited==false ){
+          if ( next != null && next.isLast ==true ) {
+            trace("Goal Reached");
+          }
+          else if ( next != null && next.visited==true ){
             pathArray.push(next);
           }
           else {
@@ -82,11 +85,12 @@ class Player extends Visual {
           }
           //Actuate.tween(this.pos,0.2,{ y: currPos.y-maze.cellSize.y-2});
         case 'down':
-          trace(direction);
           ++row;
-          trace(name+' $row-$column');
           var next : Cell =maze.cells['$row-$column'];
-          if ( next != null && next.visited==false ){
+          if ( next != null && next.isLast ==true ) {
+            trace("Goal Reached");
+          }
+          else if ( next != null && next.visited==true ){
             pathArray.push(next);
           }
           else {
@@ -94,6 +98,7 @@ class Player extends Visual {
           }
           //Actuate.tween(this.pos,0.2,{ y: currPos.y+maze.cellSize.y+2});
       }
+      trace(pathArray.length);
       pathArray[pathArray.length -1].box.color = new Color(0.2,0.2,1); // head cell
       pathArray[pathArray.length -2].box.color = new Color(0.2,0.2,0.6); // make the old head part of the tail
     }

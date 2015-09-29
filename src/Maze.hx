@@ -43,8 +43,6 @@ class Maze  {
     var cell : Cell = cells[name];
 
     if ( cell.visited == false && cell.isBorder == false ) {
-      cell.isFirst = true;
-      startCell = cell;
       makePath(cell);
     }
     else {
@@ -86,6 +84,13 @@ class Maze  {
     var name : String = Std.string(randRow)+"-"+Std.string(randColumn);
 
     cells[name].isLast = true;
+
+    randColumn = Math.ceil(Math.random()*width);
+    randRow = Math.ceil(Math.random()*height);
+    name = Std.string(randRow)+"-"+Std.string(randColumn);
+
+    cells[name].isStart = true;
+    startCell = cells[name];
 
     for ( cell in cells ) {
 

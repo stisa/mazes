@@ -10,7 +10,7 @@ class Cell {
   public var visited : Bool = false;
   public var neighbours : Array<Array<Cell>>;
   public var isBorder : Bool;
-  public var isFirst : Bool = false;
+  public var isStart : Bool = false;
   public var isLast : Bool = false;
 
   public function new ( nome: String, riga: Int, colonna: Int, maze_righe, maze_colonne) {
@@ -65,12 +65,12 @@ class Cell {
   public var box : phoenix.geometry.QuadGeometry;
   public function drawCell(cellSize: Vector, maze_pos: Vector) {
 
-    var colore : Color = new Color(1,1,1);
+    var colore : Color = new Color(0,0,0);
     if ( visited ) {
 
-      colore = new Color(0,0,0);
+      colore = new Color(1,1,1);
     }
-    if ( isFirst ){
+    if ( isStart ){
 
       colore = new Color(1,0,0);
     }
