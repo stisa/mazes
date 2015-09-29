@@ -7,9 +7,10 @@ class Maze  {
 
   public var width : Int;
   public var height : Int;
-  var cellSize : Vector;
+  public var cellSize : Vector;
   public var cells : Map<String,Cell>;
   public var pos : Vector;
+  public var startCell : Cell;
   var track : Array<Cell>;
 
   public function new ( gridSize: Vector, dimCella: Vector, posiz:Vector){
@@ -23,7 +24,7 @@ class Maze  {
 
       for ( k in 1...(width+1)) {
 
-        var c = new Cell( '$i-$k', i, k );
+        var c = new Cell( '$i-$k', i, k , height, width );
         cells['$i-$k'] = c;
       }
     } //for
@@ -43,6 +44,7 @@ class Maze  {
 
     if ( cell.visited == false && cell.isBorder == false ) {
       cell.isFirst = true;
+      startCell = cell;
       makePath(cell);
     }
     else {

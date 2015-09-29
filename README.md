@@ -1,4 +1,4 @@
-# mazes
+# Mazes
 Depth First Search mazes implemented in [luxe](https://github.com/underscorediscovery/luxe)
 Demo: [mazes](http://silvio.tisato.me/mazes/)
 

@@ -13,12 +13,12 @@ class Cell {
   public var isFirst : Bool = false;
   public var isLast : Bool = false;
 
-  public function new ( nome: String, riga: Int, colonna: Int) {
+  public function new ( nome: String, riga: Int, colonna: Int, maze_righe, maze_colonne) {
 
     row = riga;
     column = colonna;
 
-    if ( row == 1 || column == 1 ) { // FIXME: Should also avoid last row/column
+    if ( row == 1 || column == 1  || row == maze_righe || column == maze_colonne ) { // FIXME: Should also avoid last row/column
       isBorder = true;
     } else {
       isBorder = false;
@@ -62,33 +62,30 @@ class Cell {
     visited = true;
   }
 
-  var black = new Color(0,0,0);
-  var white = new Color(1,1,1);
-  var red = new Color(1,0,0);
-
+  public var box : phoenix.geometry.QuadGeometry;
   public function drawCell(cellSize: Vector, maze_pos: Vector) {
 
-    var colore : Color = white;
-    if ( visited == true ) {
+    var colore : Color = new Color(1,1,1);
+    if ( visited ) {
 
-      colore = black;
+      colore = new Color(0,0,0);
     }
-    if ( isFirst || isLast ){
-      colore = red;
+    if ( isFirst ){
+
+      colore = new Color(1,0,0);
     }
-    var box = Luxe.draw.box({
+    if ( isLast ){
+
+      colore = new Color(0,1,0);
+    }
+
+    box = Luxe.draw.box({
       x: maze_pos.x+column*(cellSize.x+2),
       y: maze_pos.y+row*(cellSize.y+2),
       w: cellSize.x,
       h: cellSize.y,
       color : colore
     });
-    if (isFirst) {
-      trace(maze_pos.y);
-      trace(column);
-      trace(cellSize.x);
-      trace(maze_pos.y+column*(cellSize.x+2));
-    }
     return box;
   }
 }
