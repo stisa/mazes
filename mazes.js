@@ -505,6 +505,10 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		Luxe.input.bind_key("right",snow_system_input_Keycodes.key_d);
 		Luxe.input.bind_key("up",snow_system_input_Keycodes.key_w);
 		Luxe.input.bind_key("down",snow_system_input_Keycodes.key_s);
+		Luxe.input.bind_mouse("left",1);
+		Luxe.input.bind_mouse("right",1);
+		Luxe.input.bind_mouse("up",1);
+		Luxe.input.bind_mouse("down",1);
 	}
 	,onwindowsized: function(e) {
 		Luxe.camera.set_center(Luxe.core.screen.get_mid());
@@ -518,9 +522,13 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		}
 	}
 	,createButtons: function() {
-		this.mazeButton = new luxe_Sprite({ name : "maze", pos : new phoenix_Vector(120,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(0,0,0)});
-		this.playerButton = new luxe_Sprite({ name : "player", pos : new phoenix_Vector(330,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(0.2,0.2,1)});
-		this.resetButton = new luxe_Sprite({ name : "reset", pos : new phoenix_Vector(600,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(1,0.2,0.2)});
+		this.mazeButton = new luxe_Sprite({ name : "maze", pos : new phoenix_Vector(120,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(0,0,0)});
+		this.playerButton = new luxe_Sprite({ name : "player", pos : new phoenix_Vector(380,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(0.2,0.2,1)});
+		this.resetButton = new luxe_Sprite({ name : "reset", pos : new phoenix_Vector(600,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(1,0.2,0.2)});
+		this.upButton = new luxe_Sprite({ name : "up", pos : new phoenix_Vector(260,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(0.5,0.2,0.2)});
+		this.downButton = new luxe_Sprite({ name : "down", pos : new phoenix_Vector(440,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(0.5,0.2,0.2)});
+		this.leftButton = new luxe_Sprite({ name : "left", pos : new phoenix_Vector(88,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(0.2,0.5,0.2)});
+		this.rightButton = new luxe_Sprite({ name : "right", pos : new phoenix_Vector(632,1210), size : new phoenix_Vector(96,96), color : new phoenix_Color(0.2,0.5,0.2)});
 	}
 	,oninputup: function(event_name,e) {
 		switch(event_name) {
@@ -543,16 +551,16 @@ Main.prototype = $extend(luxe_Game.prototype,{
 			}
 			break;
 		case "left":
-			this.player.move(event_name);
+			if(this.player != null && this.leftButton.point_inside_AABB(e.mouse_event.pos)) this.player.move(event_name);
 			break;
 		case "right":
-			this.player.move(event_name);
+			if(this.player != null && this.rightButton.point_inside_AABB(e.mouse_event.pos)) this.player.move(event_name);
 			break;
 		case "up":
-			this.player.move(event_name);
+			if(this.player != null && this.upButton.point_inside_AABB(e.mouse_event.pos)) this.player.move(event_name);
 			break;
 		case "down":
-			this.player.move(event_name);
+			if(this.player != null && this.downButton.point_inside_AABB(e.mouse_event.pos)) this.player.move(event_name);
 			break;
 		}
 	}
