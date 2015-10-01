@@ -4,6 +4,7 @@ import luxe.Vector;
 import luxe.Sprite;
 import luxe.Color;
 import luxe.Screen;
+import luxe.Visual;
 
 class Main extends luxe.Game {
 
@@ -19,13 +20,15 @@ class Main extends luxe.Game {
   var mazeButton : Sprite;
   var playerButton : Sprite;
   var resetButton : Sprite;
-  var upButton : Sprite;
-  var downButton : Sprite;
-  var rightButton : Sprite;
-  var leftButton : Sprite;
+  var upButton : Visual; var upBC : BoundingCircle;
+  var downButton : Visual;var downBC : BoundingCircle;
+  var rightButton : Visual;var rightBC : BoundingCircle;
+  var leftButton : Visual;var leftBC : BoundingCircle;
 
   override function config(config:luxe.AppConfig) {
-
+    //TODO: add target specifics
+    //config.window.width = 1280;
+    //config.window.height = 720;
       return config;
   } //config
 
@@ -34,6 +37,16 @@ class Main extends luxe.Game {
     Luxe.renderer.clear_color.rgb(0xe2e6e2);
 
     createButtons();
+    upBC = new BoundingCircle({name:"bcup"});
+    upButton.add(upBC);
+
+    downBC = new BoundingCircle();
+    downButton.add(downBC);
+
+    leftBC = new BoundingCircle();
+    leftButton.add(leftBC);
+    rightBC = new BoundingCircle();
+    rightButton.add(rightBC);
 
     gridSize = new Vector( (Luxe.screen.w-200)/cellSize.x, ( Luxe.screen.h-340 )/cellSize.y );
 
@@ -94,30 +107,65 @@ class Main extends luxe.Game {
       size: new Vector(96,64),
       color: new Color(1,0.2,0.2)
     });
-    upButton = new Sprite({
+    var geom = Luxe.draw.ngon({
+      x: 0,
+      y: 0,
+      solid: true,
+      sides: 3,
+      r: 50
+    });
+    var geom1 = Luxe.draw.ngon({
+      x: 0,
+      y: 0,
+      solid: true,
+      sides: 3,
+      r: 50
+    });
+    var geom2 = Luxe.draw.ngon({
+      x: 0,
+      y: 0,
+      solid: true,
+      sides: 3,
+      r: 50
+    });
+    var geom3 = Luxe.draw.ngon({
+      x: 0,
+      y: 0,
+      solid: true,
+      sides: 3,
+      r: 50
+    });
+    upButton = new Visual({
       name: "up",
       pos: new Vector(260,1210),
-      size: new Vector(96,96),
+    //  size: new Vector(96,96),
+      geometry : geom,
       color: new Color(0.5,0.2,0.2)
     });
-    downButton = new Sprite({
+    downButton = new Visual({
       name: "down",
       pos: new Vector(440,1210),
-      size: new Vector(96,96),
+    //  size: new Vector(96,96),
+      geometry : geom1,
       color: new Color(0.5,0.2,0.2)
     });
-    leftButton = new Sprite({
+    downButton.rotation_z += 180;
+    leftButton = new Visual({
       name: "left",
       pos: new Vector(88,1210),
-      size: new Vector(96,96),
+    //  size: new Vector(96,96),
+      geometry : geom2,
       color: new Color(0.2,0.5,0.2)
     });
-    rightButton = new Sprite({
+    leftButton.rotation_z += 270;
+    rightButton = new Visual({
       name: "right",
       pos: new Vector(632,1210),
-      size: new Vector(96,96),
+      //size: new Vector(96,96),
+      geometry : geom3,
       color: new Color(0.2,0.5,0.2)
     });
+    rightButton.rotation_z += 90;
   }
 
   override function oninputup ( event_name:String, e:InputEvent ) {
@@ -173,22 +221,22 @@ class Main extends luxe.Game {
       //click
       case 'left':
 
-        if ( player != null && leftButton.point_inside_AABB(e.mouse_event.pos) ) {
+        if ( player != null && leftBC.point_inside_circle(e.mouse_event.pos) ) {
 
           player.move(event_name);
         }
       case 'right':
-        if ( player != null && rightButton.point_inside_AABB(e.mouse_event.pos) ) {
+        if ( player != null && rightBC.point_inside_circle(e.mouse_event.pos) ) {
 
           player.move(event_name);
         }
       case 'up':
-        if ( player != null && upButton.point_inside_AABB(e.mouse_event.pos) ) {
+        if ( player != null && upBC.point_inside_circle(e.mouse_event.pos) ) {
 
           player.move(event_name);
         }
       case 'down':
-        if ( player != null && downButton.point_inside_AABB(e.mouse_event.pos) ) {
+        if ( player != null && downBC.point_inside_circle(e.mouse_event.pos) ) {
 
           player.move(event_name);
         }
