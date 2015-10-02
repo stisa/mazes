@@ -20,10 +20,11 @@ class Main extends luxe.Game {
   var mazeButton : Sprite;
   var playerButton : Sprite;
   var resetButton : Sprite;
-  var upButton : Visual; var upBC : BoundingCircle;
-  var downButton : Visual;var downBC : BoundingCircle;
-  var rightButton : Visual;var rightBC : BoundingCircle;
-  var leftButton : Visual;var leftBC : BoundingCircle;
+
+  var upButton : BoundButton;
+  var downButton : BoundButton;
+  var rightButton : BoundButton;
+  var leftButton : BoundButton;
 
   override function config(config:luxe.AppConfig) {
     //TODO: add target specifics
@@ -37,29 +38,22 @@ class Main extends luxe.Game {
     Luxe.renderer.clear_color.rgb(0xe2e6e2);
 
     createButtons();
-    upBC = new BoundingCircle({name:"bcup"});
-    upButton.add(upBC);
-
-    downBC = new BoundingCircle();
-    downButton.add(downBC);
-
-    leftBC = new BoundingCircle();
-    leftButton.add(leftBC);
-    rightBC = new BoundingCircle();
-    rightButton.add(rightBC);
 
     gridSize = new Vector( (Luxe.screen.w-200)/cellSize.x, ( Luxe.screen.h-340 )/cellSize.y );
-
     maze = new Maze( gridSize, cellSize, new Vector(4*cellSize.x,4*cellSize.y) );
 
+    // Bind button clicks
     Luxe.input.bind_mouse('click', MouseButton.left);
-    Luxe.input.bind_key('click', Key.space);
 
+    /*
+    Luxe.input.bind_key('click', Key.space);
     Luxe.input.bind_key('left', Key.key_a);
     Luxe.input.bind_key('right', Key.key_d);
     Luxe.input.bind_key('up', Key.key_w);
     Luxe.input.bind_key('down', Key.key_s);
+    */
 
+    // Bind mouse/touch controls
     Luxe.input.bind_mouse('left', MouseButton.left);
     Luxe.input.bind_mouse('right', MouseButton.left);
     Luxe.input.bind_mouse('up', MouseButton.left);
@@ -89,6 +83,7 @@ class Main extends luxe.Game {
 
   function createButtons() {
 
+    // Create Buttons
     mazeButton = new Sprite({
       name: "maze",
       pos: new Vector(120,32),
@@ -107,65 +102,41 @@ class Main extends luxe.Game {
       size: new Vector(96,64),
       color: new Color(1,0.2,0.2)
     });
-    var geom = Luxe.draw.ngon({
-      x: 0,
-      y: 0,
-      solid: true,
-      sides: 3,
-      r: 50
-    });
-    var geom1 = Luxe.draw.ngon({
-      x: 0,
-      y: 0,
-      solid: true,
-      sides: 3,
-      r: 50
-    });
-    var geom2 = Luxe.draw.ngon({
-      x: 0,
-      y: 0,
-      solid: true,
-      sides: 3,
-      r: 50
-    });
-    var geom3 = Luxe.draw.ngon({
-      x: 0,
-      y: 0,
-      solid: true,
-      sides: 3,
-      r: 50
-    });
-    upButton = new Visual({
+
+    upButton = new BoundButton({
       name: "up",
-      pos: new Vector(260,1210),
-    //  size: new Vector(96,96),
-      geometry : geom,
+      pos: new Vector(260,1220),
+      sides: 3,
+      radius: 50,
       color: new Color(0.5,0.2,0.2)
     });
-    downButton = new Visual({
+    downButton = new BoundButton({
       name: "down",
-      pos: new Vector(440,1210),
-    //  size: new Vector(96,96),
-      geometry : geom1,
+      pos: new Vector(440,1195),
+      sides: 3,
+      radius: 50,
       color: new Color(0.5,0.2,0.2)
     });
-    downButton.rotation_z += 180;
-    leftButton = new Visual({
+    leftButton = new BoundButton({
       name: "left",
       pos: new Vector(88,1210),
-    //  size: new Vector(96,96),
-      geometry : geom2,
+      sides: 3,
+      radius: 50,
       color: new Color(0.2,0.5,0.2)
     });
-    leftButton.rotation_z += 270;
-    rightButton = new Visual({
+    rightButton = new BoundButton({
       name: "right",
       pos: new Vector(632,1210),
-      //size: new Vector(96,96),
-      geometry : geom3,
+      sides: 3,
+      radius: 50,
       color: new Color(0.2,0.5,0.2)
     });
+
+    // Set controls rotation
+    downButton.rotation_z += 180;
+    leftButton.rotation_z += 270;
     rightButton.rotation_z += 90;
+
   }
 
   override function oninputup ( event_name:String, e:InputEvent ) {
@@ -190,7 +161,7 @@ class Main extends luxe.Game {
               cell: maze.startCell,
               maze: maze,
               color: new Color(0,0,1),
-              depth: 2
+              depth: 2 // draw player over the rest
             });
 
           }
@@ -203,7 +174,8 @@ class Main extends luxe.Game {
             player_once = false;
           }
         }
-        /*else if ( e.type == keys ) { // just generate the maze if the starting event is a keyboard event
+        /*
+        else if ( e.type == keys ) { // just generate the maze if the starting event is a keyboard event
 
           if( touch_once == false ) {
 
@@ -216,27 +188,29 @@ class Main extends luxe.Game {
               color: new Color(0,0,1)
             });
           }
-        }*/
+        }
+        */
 
-      //click
+      //control click
       case 'left':
 
-        if ( player != null && leftBC.point_inside_circle(e.mouse_event.pos) ) {
+        if ( player != null && leftButton.point_inside_circle(e.mouse_event.pos) ) {
 
           player.move(event_name);
         }
       case 'right':
-        if ( player != null && rightBC.point_inside_circle(e.mouse_event.pos) ) {
+        if ( player != null && rightButton.point_inside_circle(e.mouse_event.pos) ) {
 
           player.move(event_name);
         }
       case 'up':
-        if ( player != null && upBC.point_inside_circle(e.mouse_event.pos) ) {
+        //if ( player != null && upBC.point_inside_circle(e.mouse_event.pos) ) {
+        if ( player != null && upButton.point_inside_circle(e.mouse_event.pos) ) {
 
           player.move(event_name);
         }
       case 'down':
-        if ( player != null && downBC.point_inside_circle(e.mouse_event.pos) ) {
+        if ( player != null && downButton.point_inside_circle(e.mouse_event.pos) ) {
 
           player.move(event_name);
         }

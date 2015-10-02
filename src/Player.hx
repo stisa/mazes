@@ -28,7 +28,7 @@ class Player extends Visual {
         cell = options.cell;
         row = cell.row;
         column = cell.column;
-        trace(row+" "+column);
+        //trace(row+" "+column);
         //cell.box.color = new Color(0,1,0);
       }
       if ( options.maze!=null ){
