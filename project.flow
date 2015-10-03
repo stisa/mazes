@@ -13,7 +13,7 @@
 
   project : {
     name : 'mazes',
-    version : '0.0.3',
+    version : '0.0.4',
     author : 'stisa',
 
     app : {
@@ -31,12 +31,12 @@
       dependencies : {
         luxe : '*',
       },
-    //  post : {    // FIXME: on `flow run web` the script executes fine but then exites without running
-    //   priority : 1,
-    //   name : 'gh-pages',
-    //   desc : 'copy bin/web to gh-pages',
-    //  script : './hooks/post.js',
-    //  }
+     post : {    // FIXME: on `flow run web` the script executes fine but then exites without running
+        priority : 1,
+        name : 'copy-to-gh-pages',
+        desc : 'copy bin/web to gh-pages',
+        script : './hooks/post.js',
+      }
     },
 
     files : {
