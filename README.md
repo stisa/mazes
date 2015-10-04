@@ -4,6 +4,6 @@ Depth First Search mazes implemented in https://github.com/underscorediscovery/l
 ## TODO
 
 - [x] Backtracking
-- [x] Start point and goal ( green/red )
-- ~~[ ] Scale the grid based on screensize~~
+- [ ] Function to select start point and goal ( green/red )
+- [ ] Scale the grid based on screensize
 
