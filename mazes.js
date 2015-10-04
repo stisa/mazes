@@ -1424,6 +1424,7 @@ luxe_Game.prototype = $extend(luxe_Emitter.prototype,{
 	,__class__: luxe_Game
 });
 var Main = function() {
+	this.console = false;
 	this.cellSize = new phoenix_Vector(14,14);
 	this.player_once = false;
 	this.maze_once = false;
@@ -1434,18 +1435,25 @@ Main.__name__ = ["Main"];
 Main.__super__ = luxe_Game;
 Main.prototype = $extend(luxe_Game.prototype,{
 	config: function(config) {
+		if(Luxe.core.app.platform == "web") {
+			config.window.width = 1280;
+			config.window.height = 720;
+		}
 		return config;
 	}
 	,ready: function() {
 		Luxe.renderer.clear_color.rgb(14870242);
-		this.createButtons();
-		this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 200) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
+		if(Luxe.core.app.platform == "web") {
+			this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 280) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
+			this.createDesktopButtons();
+		} else {
+			this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 200) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
+			this.createButtons();
+		}
 		this.maze = new Maze(this.gridSize,this.cellSize,new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y));
+		haxe_Log.trace("     i / main / " + Std.string(this.gridSize),{ fileName : "Main.hx", lineNumber : 47, className : "Main", methodName : "ready"});
+		haxe_Log.trace("     i / main / " + Std.string(new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y)),{ fileName : "Main.hx", lineNumber : 48, className : "Main", methodName : "ready"});
 		Luxe.input.bind_mouse("click",1);
-		Luxe.input.bind_mouse("left",1);
-		Luxe.input.bind_mouse("right",1);
-		Luxe.input.bind_mouse("up",1);
-		Luxe.input.bind_mouse("down",1);
 	}
 	,onwindowsized: function(e) {
 		Luxe.camera.set_center(Luxe.core.screen.get_mid());
@@ -1455,6 +1463,13 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		if(e.keycode == snow_system_input_Keycodes.key_r) {
 			this.maze.reset();
 			this.maze_once = false;
+		}
+		if(e.keycode == snow_system_input_Keycodes.key_c && this.console == false) {
+			this.console = true;
+			Luxe.showConsole(this.console);
+		} else if(e.keycode == snow_system_input_Keycodes.key_c && this.console == true) {
+			this.console = false;
+			Luxe.showConsole(this.console);
 		}
 	}
 	,createButtons: function() {
@@ -1470,6 +1485,28 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		_g1.set_rotation_z(_g1.get_rotation_z() + 270);
 		var _g2 = this.rightButton;
 		_g2.set_rotation_z(_g2.get_rotation_z() + 90);
+		Luxe.input.bind_mouse("left",1);
+		Luxe.input.bind_mouse("right",1);
+		Luxe.input.bind_mouse("up",1);
+		Luxe.input.bind_mouse("down",1);
+	}
+	,createDesktopButtons: function() {
+		this.mazeButton = new luxe_Sprite({ name : "maze", pos : new phoenix_Vector(120,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(0,0,0)});
+		this.resetButton = new luxe_Sprite({ name : "reset", pos : new phoenix_Vector(1160,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(1,0.2,0.2)});
+		this.upButton = new BoundButton({ name : "up", pos : new phoenix_Vector(260,635), sides : 3, radius : 50, color : new phoenix_Color(0.5,0.2,0.2)});
+		this.downButton = new BoundButton({ name : "down", pos : new phoenix_Vector(440,635), sides : 3, radius : 50, color : new phoenix_Color(0.5,0.2,0.2)});
+		this.leftButton = new BoundButton({ name : "left", pos : new phoenix_Vector(88,635), sides : 3, radius : 50, color : new phoenix_Color(0.2,0.5,0.2)});
+		this.rightButton = new BoundButton({ name : "right", pos : new phoenix_Vector(632,635), sides : 3, radius : 50, color : new phoenix_Color(0.2,0.5,0.2)});
+		var _g = this.downButton;
+		_g.set_rotation_z(_g.get_rotation_z() + 180);
+		var _g1 = this.leftButton;
+		_g1.set_rotation_z(_g1.get_rotation_z() + 270);
+		var _g2 = this.rightButton;
+		_g2.set_rotation_z(_g2.get_rotation_z() + 90);
+		Luxe.input.bind_mouse("left",1);
+		Luxe.input.bind_mouse("right",1);
+		Luxe.input.bind_mouse("up",1);
+		Luxe.input.bind_mouse("down",1);
 	}
 	,oninputup: function(event_name,e) {
 		switch(event_name) {
