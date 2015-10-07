@@ -2,7 +2,6 @@
 import luxe.Visual;
 import luxe.options.VisualOptions;
 import luxe.Vector;
-//import luxe.Color;
 
 typedef BoundButtonOptions = {
 
@@ -26,7 +25,6 @@ class BoundButton extends Visual {
       sides = options.sides;
     }
 
-    //var geom = Luxe.draw.ngon({ x: 0, y: 0, solid: true, sides: sides, r: radius });
     options.geometry = Luxe.draw.ngon({ x: 0, y: 0, solid: true, sides: sides, r: radius });
 
     super(options);
@@ -34,8 +32,6 @@ class BoundButton extends Visual {
   } // new
 
   function dist(v1:Vector,v2:Vector):Float {
-    // looks like vertices[0] is the center of the ngon,
-    // this allows us to easily get the radius of the BoundingCircle
     var x = Math.abs(v2.x-v1.x);
     var y = Math.abs(v2.y-v1.y);
     return Math.sqrt((x*x)+(y*y));

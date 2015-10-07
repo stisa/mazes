@@ -21,15 +21,13 @@ class Player extends Visual {
   var row : Int;
   var pathArray : Array<Cell>;
 
-    override function new(options: PlayerOptions) {
+    override public function new(options: PlayerOptions) {
 
       if ( options.cell!=null ){
 
         cell = options.cell;
         row = cell.row;
         column = cell.column;
-        //trace(row+" "+column);
-        //cell.box.color = new Color(0,1,0);
       }
       if ( options.maze!=null ){
 
@@ -57,7 +55,6 @@ class Player extends Visual {
           else {
             ++column;
           }
-          //Actuate.tween(this.pos,0.2,{ x: currPos.x-maze.cellSize.x-2});
         case 'right':
           ++column;
           var next : Cell =maze.cells['$row-$column'];
@@ -70,7 +67,6 @@ class Player extends Visual {
           else {
             --column;
           }
-          //Actuate.tween(this.pos,0.2,{ x: currPos.x+maze.cellSize.x+2});
         case 'up':
           --row;
           var next : Cell =maze.cells['$row-$column'];
@@ -83,7 +79,6 @@ class Player extends Visual {
           else {
             ++row;
           }
-          //Actuate.tween(this.pos,0.2,{ y: currPos.y-maze.cellSize.y-2});
         case 'down':
           ++row;
           var next : Cell =maze.cells['$row-$column'];
@@ -96,14 +91,13 @@ class Player extends Visual {
           else {
             --row;
           }
-          //Actuate.tween(this.pos,0.2,{ y: currPos.y+maze.cellSize.y+2});
       }
       trace(pathArray.length);
-      pathArray[pathArray.length -1].box.color = new Color(0.2,0.2,1); // head cell
-      pathArray[pathArray.length -2].box.color = new Color(0.2,0.2,0.6); // make the old head part of the tail
+      pathArray[pathArray.length -1].box.color = new Color(0,0.8,0.6); // head cell
+      pathArray[pathArray.length -2].box.color = new Color(0.2,0.6,0); // make the old head part of the tail
     }
 
-    public function reset(){ // not working correctly
+    public function reset(){
       this.destroy();
     }
 }

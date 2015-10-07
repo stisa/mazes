@@ -11,6 +11,7 @@ class Maze  {
   public var cells : Map<String,Cell>;
   public var pos : Vector;
   public var startCell : Cell;
+  public var player : Player;
   var track : Array<Cell>;
 
   public function new ( gridSize: Vector, dimCella: Vector, posiz:Vector){
@@ -74,6 +75,14 @@ class Maze  {
 
       trace("Completed");
       completed();
+      player = new Player({
+        name: 'player',
+        geometry: startCell.box,
+        cell: startCell,
+        maze: this,
+        color: new Color(0,0.8,0.6),
+        depth: 2 // draw player over the rest
+      });
     }
   } // makePath
 
@@ -84,7 +93,7 @@ class Maze  {
     var name : String = Std.string(randRow)+"-"+Std.string(randColumn);
 
     cells[name].isLast = true;
-    
+
     randColumn = Math.ceil(Math.random()*width);
     randRow = Math.ceil(Math.random()*height);
     name = Std.string(randRow)+"-"+Std.string(randColumn);
