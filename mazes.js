@@ -1198,6 +1198,9 @@ Cell.prototype = {
 	}
 	,__class__: Cell
 };
+var Constants = function() { };
+$hxClasses["Constants"] = Constants;
+Constants.__name__ = ["Constants"];
 var EReg = function(r,opt) {
 	opt = opt.split("u").join("");
 	this.r = new RegExp(r,opt);
@@ -1550,6 +1553,7 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		this.stateSelector = new luxe_States();
 		this.stateSelector.add(new MenuState({ name : "menu"}));
 		this.stateSelector.add(new PlayState({ name : "play"}));
+		this.stateSelector.add(new ScoreState({ name : "score"}));
 		Luxe.input.bind_mouse("click",1);
 	}
 	,set_start: function(parcel) {
@@ -1638,6 +1642,7 @@ Maze.prototype = $extend(luxe_Entity.prototype,{
 		randRow = Math.ceil(Math.random() * this.height);
 		name = (randRow == null?"null":"" + randRow) + "-" + (randColumn == null?"null":"" + randColumn);
 		this.cells.get(name).isStart = true;
+		this.cells.get(name).visited = true;
 		this.startCell = this.cells.get(name);
 		var $it0 = this.cells.iterator();
 		while( $it0.hasNext() ) {
@@ -1647,7 +1652,7 @@ Maze.prototype = $extend(luxe_Entity.prototype,{
 		}
 	}
 	,reset: function() {
-		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 131, className : "Maze", methodName : "reset"});
+		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 132, className : "Maze", methodName : "reset"});
 		var _g = 0;
 		var _g1 = this.boxArray;
 		while(_g < _g1.length) {
@@ -1820,25 +1825,22 @@ PlayState.__name__ = ["PlayState"];
 PlayState.__super__ = luxe_State;
 PlayState.prototype = $extend(luxe_State.prototype,{
 	onenter: function(_) {
-		haxe_Log.trace("entering " + this.name,{ fileName : "PlayState.hx", lineNumber : 19, className : "PlayState", methodName : "onenter"});
-		if(Luxe.core.app.platform == "web") {
-			this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 280) / this.cellSize.x,(Luxe.core.screen.get_h() - 256) / this.cellSize.y);
-			this.createDesktopControls();
-		} else {
-			this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 200) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
-			this.createDesktopControls();
-		}
+		haxe_Log.trace("Entering " + this.name,{ fileName : "PlayState.hx", lineNumber : 20, className : "PlayState", methodName : "onenter"});
+		if(Luxe.core.app.platform == "web") this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 280) / this.cellSize.x,(Luxe.core.screen.get_h() - 256) / this.cellSize.y); else this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 200) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
+		this.buttonArray = [];
+		this.createDesktopControls();
 		this.maze = new Maze({ name : "grid", gridSize : this.gridSize, cellSize : this.cellSize, pos : new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y)});
 	}
-	,createControls: function() {
-		this.upButton = new BoundButton({ name : "up", pos : new phoenix_Vector(260,1220), texture : Luxe.resources.cache.get("assets/up.png")});
-		this.downButton = new BoundButton({ name : "down", pos : new phoenix_Vector(440,1195), texture : Luxe.resources.cache.get("assets/down.png")});
-		this.leftButton = new BoundButton({ name : "left", pos : new phoenix_Vector(88,1210), texture : Luxe.resources.cache.get("assets/left.png")});
-		this.rightButton = new BoundButton({ name : "right", pos : new phoenix_Vector(632,1210), texture : Luxe.resources.cache.get("assets/right.png")});
-		Luxe.input.bind_mouse("left",1);
-		Luxe.input.bind_mouse("right",1);
-		Luxe.input.bind_mouse("up",1);
-		Luxe.input.bind_mouse("down",1);
+	,onleave: function(_) {
+		this.maze.reset();
+		var _g = 0;
+		var _g1 = this.buttonArray;
+		while(_g < _g1.length) {
+			var button = _g1[_g];
+			++_g;
+			button.destroy();
+		}
+		this.maze.destroy();
 	}
 	,createDesktopControls: function() {
 		this.upButton = new BoundButton({ name : "up", pos : (function($this) {
@@ -1904,14 +1906,12 @@ PlayState.prototype = $extend(luxe_State.prototype,{
 			Luxe.input.bind_key("down",snow_system_input_Keycodes.key_s);
 			Luxe.input.bind_key("reset",snow_system_input_Keycodes.key_r);
 		}
+		this.buttonArray = [this.upButton,this.downButton,this.leftButton,this.rightButton,this.closeButton];
 	}
 	,oninputup: function(event_name,e) {
 		if(e.type == luxe_InputType.mouse) switch(event_name) {
 		case "reset":
-			if(this.closeButton.point_inside_circle(e.mouse_event.pos)) {
-				haxe_Log.trace("res",{ fileName : "PlayState.hx", lineNumber : 137, className : "PlayState", methodName : "oninputup"});
-				this.maze.reset();
-			}
+			if(this.closeButton.point_inside_circle(e.mouse_event.pos)) this.machine.set("score",null,this);
 			break;
 		case "left":
 			if(this.maze.player != null && this.leftButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
@@ -1943,9 +1943,13 @@ PlayState.prototype = $extend(luxe_State.prototype,{
 			break;
 		}
 	}
+	,update: function(dt) {
+		if(this.maze.player != null && this.maze.player.hasWon) this.machine.set("score",null,this);
+	}
 	,__class__: PlayState
 });
 var Player = function(options) {
+	this.hasWon = false;
 	if(options.cell != null) {
 		this.cell = options.cell;
 		this.row = this.cell.row;
@@ -1967,25 +1971,37 @@ Player.prototype = $extend(luxe_Visual.prototype,{
 		case "left":
 			--this.column;
 			var next = this.maze.cells.get("" + this.row + "-" + this.column);
-			if(next != null && next.isLast == true) haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 50, className : "Player", methodName : "move"}); else if(next != null && next.visited == true) this.pathArray.push(next); else ++this.column;
+			if(next != null && next.isLast == true) {
+				haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 52, className : "Player", methodName : "move"});
+				this.hasWon = true;
+			} else if(next != null && next.visited == true) this.pathArray.push(next); else ++this.column;
 			break;
 		case "right":
 			++this.column;
 			var next1 = this.maze.cells.get("" + this.row + "-" + this.column);
-			if(next1 != null && next1.isLast == true) haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 62, className : "Player", methodName : "move"}); else if(next1 != null && next1.visited == true) this.pathArray.push(next1); else --this.column;
+			if(next1 != null && next1.isLast == true) {
+				haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 65, className : "Player", methodName : "move"});
+				this.hasWon = true;
+			} else if(next1 != null && next1.visited == true) this.pathArray.push(next1); else --this.column;
 			break;
 		case "up":
 			--this.row;
 			var next2 = this.maze.cells.get("" + this.row + "-" + this.column);
-			if(next2 != null && next2.isLast == true) haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 74, className : "Player", methodName : "move"}); else if(next2 != null && next2.visited == true) this.pathArray.push(next2); else ++this.row;
+			if(next2 != null && next2.isLast == true) {
+				haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 78, className : "Player", methodName : "move"});
+				this.hasWon = true;
+			} else if(next2 != null && next2.visited == true) this.pathArray.push(next2); else ++this.row;
 			break;
 		case "down":
 			++this.row;
 			var next3 = this.maze.cells.get("" + this.row + "-" + this.column);
-			if(next3 != null && next3.isLast == true) haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 86, className : "Player", methodName : "move"}); else if(next3 != null && next3.visited == true) this.pathArray.push(next3); else --this.row;
+			if(next3 != null && next3.isLast == true) {
+				haxe_Log.trace("Goal Reached",{ fileName : "Player.hx", lineNumber : 91, className : "Player", methodName : "move"});
+				this.hasWon = true;
+			} else if(next3 != null && next3.visited == true) this.pathArray.push(next3); else --this.row;
 			break;
 		}
-		haxe_Log.trace(this.pathArray.length,{ fileName : "Player.hx", lineNumber : 95, className : "Player", methodName : "move"});
+		Constants.score = this.pathArray.length;
 		this.pathArray[this.pathArray.length - 1].box.set_color(new phoenix_Color(0,0.8,0.6));
 		this.pathArray[this.pathArray.length - 2].box.set_color(new phoenix_Color(0.88,1,0.88));
 	}
@@ -2043,6 +2059,33 @@ Reflect.deleteField = function(o,field) {
 	delete(o[field]);
 	return true;
 };
+var ScoreState = function(_options) {
+	luxe_State.call(this,_options);
+};
+$hxClasses["ScoreState"] = ScoreState;
+ScoreState.__name__ = ["ScoreState"];
+ScoreState.__super__ = luxe_State;
+ScoreState.prototype = $extend(luxe_State.prototype,{
+	onenter: function(_) {
+		var score = Constants.score;
+		haxe_Log.trace("Entering " + this.name,{ fileName : "ScoreState.hx", lineNumber : 14, className : "ScoreState", methodName : "onenter"});
+		Luxe.draw.text({ color : new phoenix_Color(0,0,0), pos : Luxe.core.screen.get_mid(), point_size : 48, align : 2, text : "You scored " + score + " points"});
+		this.closeButton = new BoundButton({ name : "close", pos : (function($this) {
+			var $r;
+			var lhs = Luxe.core.screen.get_mid();
+			var rhs = new phoenix_Vector(0,256,null,null);
+			$r = new phoenix_Vector(lhs.x + rhs.x,lhs.y + rhs.y,lhs.z + rhs.z);
+			return $r;
+		}(this)), texture : Luxe.resources.cache.get("assets/close.png")});
+		Luxe.input.bind_mouse("close",1);
+	}
+	,oninputup: function(event_name,e) {
+		if(event_name == "close") {
+			if(this.closeButton.point_inside_circle(e.mouse_event.pos)) Luxe.shutdown();
+		}
+	}
+	,__class__: ScoreState
+});
 var Std = function() { };
 $hxClasses["Std"] = Std;
 Std.__name__ = ["Std"];
@@ -23305,6 +23348,7 @@ var ArrayBuffer = (Function("return typeof ArrayBuffer != 'undefined' ? ArrayBuf
 if(ArrayBuffer.prototype.slice == null) ArrayBuffer.prototype.slice = js_html_compat_ArrayBuffer.sliceImpl;
 var DataView = (Function("return typeof DataView != 'undefined' ? DataView : null"))() || js_html_compat_DataView;
 var Uint8Array = (Function("return typeof Uint8Array != 'undefined' ? Uint8Array : null"))() || js_html_compat_Uint8Array._new;
+Constants.score = 0;
 Luxe.version = "dev";
 Luxe.build = "+7a305f76ae";
 haxe_Serializer.USE_CACHE = false;

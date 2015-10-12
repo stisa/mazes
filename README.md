@@ -1,9 +1,7 @@
 # mazes
-Depth First Search mazes implemented in https://github.com/underscorediscovery/luxe/
 
-## TODO
+Depth First Search maze generator made in [luxe](https://github.com/underscorediscovery/luxe/) using haxe
 
-- [x] Backtracking
-- [ ] Function to select start point and goal ( green/red )
-- [ ] Scale the grid based on screensize
+Demo: [here](http://blog.tisato.me/mazes)
+
 
