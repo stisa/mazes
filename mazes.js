@@ -1021,16 +1021,117 @@ luxe_Visual.prototype = $extend(luxe_Entity.prototype,{
 	,__class__: luxe_Visual
 	,__properties__: $extend(luxe_Entity.prototype.__properties__,{set_rotation_z:"set_rotation_z",get_rotation_z:"get_rotation_z",set_radians:"set_radians",get_radians:"get_radians",set_clip_rect:"set_clip_rect",set_depth:"set_depth",set_visible:"set_visible",set_color:"set_color",set_shader:"set_shader",set_texture:"set_texture",set_locked:"set_locked",set_geometry:"set_geometry",set_size:"set_size"})
 });
+var luxe_Sprite = function(options) {
+	this.flipy = false;
+	this.flipx = false;
+	this.centered = true;
+	this.set_uv(new phoenix_Rectangle());
+	if(options == null) throw new js__$Boot_HaxeError(luxe_DebugError.null_assertion("options was null" + (" ( " + "Sprite requires non-null options" + " )")));
+	if(options.centered != null) this.set_centered(options.centered);
+	if(options.flipx != null) this.set_flipx(options.flipx);
+	if(options.flipy != null) this.set_flipy(options.flipy);
+	luxe_Visual.call(this,options);
+};
+$hxClasses["luxe.Sprite"] = luxe_Sprite;
+luxe_Sprite.__name__ = ["luxe","Sprite"];
+luxe_Sprite.__super__ = luxe_Visual;
+luxe_Sprite.prototype = $extend(luxe_Visual.prototype,{
+	on_geometry_created: function() {
+		luxe_Visual.prototype.on_geometry_created.call(this);
+		if(this.texture != null) {
+			this.set_uv((function($this) {
+				var $r;
+				if($this.options.uv == null) $this.options.uv = new phoenix_Rectangle(0,0,$this.texture.width,$this.texture.height);
+				$r = $this.options.uv;
+				return $r;
+			}(this)));
+			if(this.texture.resource_type == 5) this.set_flipy(true);
+		}
+		this.set_centered(!(!this.centered));
+		this.set_flipx(!(!this.flipx));
+		this.set_flipy(!(!this.flipy));
+	}
+	,set_geometry: function(_g) {
+		this.geometry_quad = _g;
+		return luxe_Visual.prototype.set_geometry.call(this,_g);
+	}
+	,point_inside: function(_p) {
+		if(this.geometry == null) return false;
+		return Luxe.utils.geometry.point_in_geometry(_p,this.geometry);
+	}
+	,point_inside_AABB: function(_p) {
+		if(this.get_pos() == null) return false;
+		if(this.size == null) return false;
+		var _s_x = this.size.x * this.get_scale().x;
+		var _s_y = this.size.y * this.get_scale().y;
+		if(this.centered) {
+			var _hx = _s_x / 2;
+			var _hy = _s_y / 2;
+			if(_p.x < this.get_pos().x - _hx) return false;
+			if(_p.y < this.get_pos().y - _hy) return false;
+			if(_p.x > this.get_pos().x + _s_x - _hx) return false;
+			if(_p.y > this.get_pos().y + _s_y - _hy) return false;
+		} else {
+			if(_p.x < this.get_pos().x) return false;
+			if(_p.y < this.get_pos().y) return false;
+			if(_p.x > this.get_pos().x + _s_x) return false;
+			if(_p.y > this.get_pos().y + _s_y) return false;
+		}
+		return true;
+	}
+	,set_uv: function(_uv) {
+		if(this.geometry_quad != null) this.geometry_quad.uv(_uv);
+		this.uv = _uv;
+		phoenix_Rectangle.listen(this.uv,$bind(this,this._uv_change));
+		return this.uv;
+	}
+	,set_flipy: function(_v) {
+		if(_v == this.flipy) return this.flipy;
+		if(this.geometry_quad != null) this.geometry_quad.set_flipy(_v);
+		return this.flipy = _v;
+	}
+	,set_flipx: function(_v) {
+		if(_v == this.flipx) return this.flipx;
+		if(this.geometry_quad != null) this.geometry_quad.set_flipx(_v);
+		return this.flipx = _v;
+	}
+	,set_size: function(_v) {
+		if(this.geometry_quad != null) {
+			this.geometry_quad.resize(new phoenix_Vector(_v.x,_v.y));
+			if(!this._has_custom_origin) {
+				if(this.centered) this.set_origin(new phoenix_Vector(_v.x,_v.y,_v.z,_v.w).divideScalar(2));
+			}
+		}
+		return luxe_Visual.prototype.set_size.call(this,_v);
+	}
+	,set_centered: function(_c) {
+		if(this.size != null) {
+			if(_c) this.set_origin(new phoenix_Vector(this.size.x / 2,this.size.y / 2)); else this.set_origin(new phoenix_Vector());
+		}
+		return this.centered = _c;
+	}
+	,_uv_change: function(_v) {
+		this.set_uv(this.uv);
+	}
+	,init: function() {
+		luxe_Visual.prototype.init.call(this);
+	}
+	,ondestroy: function() {
+		luxe_Visual.prototype.ondestroy.call(this);
+	}
+	,__class__: luxe_Sprite
+	,__properties__: $extend(luxe_Visual.prototype.__properties__,{set_uv:"set_uv",set_flipy:"set_flipy",set_flipx:"set_flipx",set_centered:"set_centered"})
+});
 var BoundButton = function(options) {
 	if(options.radius != null) this.radius = options.radius;
 	if(options.sides != null) this.sides = options.sides;
-	options.geometry = Luxe.draw.ngon({ x : 0, y : 0, solid : true, sides : this.sides, r : this.radius});
-	luxe_Visual.call(this,options);
+	if(options.texture == null) options.geometry = Luxe.draw.ngon({ x : 0, y : 0, solid : true, sides : this.sides, r : this.radius}); else this.radius = options.texture.width / 2;
+	luxe_Sprite.call(this,options);
 };
 $hxClasses["BoundButton"] = BoundButton;
 BoundButton.__name__ = ["BoundButton"];
-BoundButton.__super__ = luxe_Visual;
-BoundButton.prototype = $extend(luxe_Visual.prototype,{
+BoundButton.__super__ = luxe_Sprite;
+BoundButton.prototype = $extend(luxe_Sprite.prototype,{
 	dist: function(v1,v2) {
 		var x = Math.abs(v2.x - v1.x);
 		var y = Math.abs(v2.y - v1.y);
@@ -1041,10 +1142,10 @@ BoundButton.prototype = $extend(luxe_Visual.prototype,{
 		if(this.radius > d) return true; else return false;
 	}
 	,init: function() {
-		luxe_Visual.prototype.init.call(this);
+		luxe_Sprite.prototype.init.call(this);
 	}
 	,ondestroy: function() {
-		luxe_Visual.prototype.ondestroy.call(this);
+		luxe_Sprite.prototype.ondestroy.call(this);
 	}
 	,__class__: BoundButton
 });
@@ -1052,6 +1153,7 @@ var Cell = function(nome,riga,colonna,maze_righe,maze_colonne) {
 	this.isLast = false;
 	this.isStart = false;
 	this.visited = false;
+	this.name = nome;
 	this.row = riga;
 	this.column = colonna;
 	if(this.row == 1 || this.column == 1 || this.row == maze_righe || this.column == maze_colonne) this.isBorder = true; else this.isBorder = false;
@@ -1425,7 +1527,6 @@ luxe_Game.prototype = $extend(luxe_Emitter.prototype,{
 });
 var Main = function() {
 	this.console = false;
-	this.cellSize = new phoenix_Vector(14,14);
 	this.player_once = false;
 	this.maze_once = false;
 	luxe_Game.call(this);
@@ -1443,27 +1544,22 @@ Main.prototype = $extend(luxe_Game.prototype,{
 	}
 	,ready: function() {
 		Luxe.renderer.clear_color.rgb(14870242);
-		if(Luxe.core.app.platform == "web") {
-			this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 280) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
-			this.createDesktopButtons();
-		} else {
-			this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 200) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
-			this.createButtons();
-		}
-		this.maze = new Maze(this.gridSize,this.cellSize,new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y));
-		haxe_Log.trace("     i / main / " + Std.string(this.gridSize),{ fileName : "Main.hx", lineNumber : 47, className : "Main", methodName : "ready"});
-		haxe_Log.trace("     i / main / " + Std.string(new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y)),{ fileName : "Main.hx", lineNumber : 48, className : "Main", methodName : "ready"});
+		var parcel = new luxe_Parcel({ textures : [{ id : "assets/play.png"},{ id : "assets/close.png"},{ id : "assets/up.png"},{ id : "assets/down.png"},{ id : "assets/left.png"},{ id : "assets/right.png"}]});
+		new luxe_ParcelProgress({ parcel : parcel, background : new phoenix_Color().rgb(14870242), oncomplete : $bind(this,this.set_start)});
+		parcel.load();
+		this.stateSelector = new luxe_States();
+		this.stateSelector.add(new MenuState({ name : "menu"}));
+		this.stateSelector.add(new PlayState({ name : "play"}));
 		Luxe.input.bind_mouse("click",1);
+	}
+	,set_start: function(parcel) {
+		this.stateSelector.set("menu");
 	}
 	,onwindowsized: function(e) {
 		Luxe.camera.set_center(Luxe.core.screen.get_mid());
 	}
 	,onkeyup: function(e) {
 		if(e.keycode == snow_system_input_Keycodes.escape) Luxe.shutdown();
-		if(e.keycode == snow_system_input_Keycodes.key_r) {
-			this.maze.reset();
-			this.maze_once = false;
-		}
 		if(e.keycode == snow_system_input_Keycodes.key_c && this.console == false) {
 			this.console = true;
 			Luxe.showConsole(this.console);
@@ -1472,102 +1568,41 @@ Main.prototype = $extend(luxe_Game.prototype,{
 			Luxe.showConsole(this.console);
 		}
 	}
-	,createButtons: function() {
-		this.mazeButton = new luxe_Sprite({ name : "maze", pos : new phoenix_Vector(120,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(0,0,0)});
-		this.resetButton = new luxe_Sprite({ name : "reset", pos : new phoenix_Vector(600,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(1,0.2,0.2)});
-		this.upButton = new BoundButton({ name : "up", pos : new phoenix_Vector(260,1220), sides : 3, radius : 50, color : new phoenix_Color(0.5,0.2,0.2)});
-		this.downButton = new BoundButton({ name : "down", pos : new phoenix_Vector(440,1195), sides : 3, radius : 50, color : new phoenix_Color(0.5,0.2,0.2)});
-		this.leftButton = new BoundButton({ name : "left", pos : new phoenix_Vector(88,1210), sides : 3, radius : 50, color : new phoenix_Color(0.2,0.5,0.2)});
-		this.rightButton = new BoundButton({ name : "right", pos : new phoenix_Vector(632,1210), sides : 3, radius : 50, color : new phoenix_Color(0.2,0.5,0.2)});
-		var _g = this.downButton;
-		_g.set_rotation_z(_g.get_rotation_z() + 180);
-		var _g1 = this.leftButton;
-		_g1.set_rotation_z(_g1.get_rotation_z() + 270);
-		var _g2 = this.rightButton;
-		_g2.set_rotation_z(_g2.get_rotation_z() + 90);
-		Luxe.input.bind_mouse("left",1);
-		Luxe.input.bind_mouse("right",1);
-		Luxe.input.bind_mouse("up",1);
-		Luxe.input.bind_mouse("down",1);
-	}
-	,createDesktopButtons: function() {
-		this.mazeButton = new luxe_Sprite({ name : "maze", pos : new phoenix_Vector(120,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(0,0,0)});
-		this.resetButton = new luxe_Sprite({ name : "reset", pos : new phoenix_Vector(1160,32), size : new phoenix_Vector(96,64), color : new phoenix_Color(1,0.2,0.2)});
-		this.upButton = new BoundButton({ name : "up", pos : new phoenix_Vector(260,635), sides : 3, radius : 50, color : new phoenix_Color(0.5,0.2,0.2)});
-		this.downButton = new BoundButton({ name : "down", pos : new phoenix_Vector(440,635), sides : 3, radius : 50, color : new phoenix_Color(0.5,0.2,0.2)});
-		this.leftButton = new BoundButton({ name : "left", pos : new phoenix_Vector(88,635), sides : 3, radius : 50, color : new phoenix_Color(0.2,0.5,0.2)});
-		this.rightButton = new BoundButton({ name : "right", pos : new phoenix_Vector(632,635), sides : 3, radius : 50, color : new phoenix_Color(0.2,0.5,0.2)});
-		var _g = this.downButton;
-		_g.set_rotation_z(_g.get_rotation_z() + 180);
-		var _g1 = this.leftButton;
-		_g1.set_rotation_z(_g1.get_rotation_z() + 270);
-		var _g2 = this.rightButton;
-		_g2.set_rotation_z(_g2.get_rotation_z() + 90);
-		Luxe.input.bind_mouse("left",1);
-		Luxe.input.bind_mouse("right",1);
-		Luxe.input.bind_mouse("up",1);
-		Luxe.input.bind_mouse("down",1);
-	}
-	,oninputup: function(event_name,e) {
-		switch(event_name) {
-		case "click":
-			if(e.type == luxe_InputType.mouse) {
-				if(this.maze_once == false && this.mazeButton.point_inside_AABB(e.mouse_event.pos)) {
-					this.maze_once = true;
-					this.maze = new Maze(this.gridSize,this.cellSize,new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y));
-				}
-				if(this.resetButton.point_inside_AABB(e.mouse_event.pos)) {
-					this.maze.reset();
-					this.maze_once = false;
-				}
-			}
-			break;
-		case "left":
-			if(this.maze.player != null && this.leftButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
-			break;
-		case "right":
-			if(this.maze.player != null && this.rightButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
-			break;
-		case "up":
-			if(this.maze.player != null && this.upButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
-			break;
-		case "down":
-			if(this.maze.player != null && this.downButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
-			break;
-		}
-	}
 	,__class__: Main
 });
 Math.__name__ = ["Math"];
-var Maze = function(gridSize,dimCella,posiz) {
+var Maze = function(options) {
 	this.boxArray = [];
-	this.height = gridSize.y | 0;
-	this.width = gridSize.x | 0;
-	this.cellSize = dimCella;
-	this.pos = posiz;
-	this.cells = new haxe_ds_StringMap();
-	var _g1 = 1;
-	var _g = this.height + 1;
-	while(_g1 < _g) {
-		var i = _g1++;
-		var _g3 = 1;
-		var _g2 = this.width + 1;
-		while(_g3 < _g2) {
-			var k = _g3++;
-			var c = new Cell("" + i + "-" + k,i,k,this.height,this.width);
-			{
-				this.cells.set("" + i + "-" + k,c);
-				c;
-			}
-		}
-	}
-	this.track = [];
-	this.startPath();
+	this.height = options.gridSize.y | 0;
+	this.width = options.gridSize.x | 0;
+	this.cellSize = options.cellSize;
+	luxe_Entity.call(this,options);
 };
 $hxClasses["Maze"] = Maze;
 Maze.__name__ = ["Maze"];
-Maze.prototype = {
-	startPath: function() {
+Maze.__super__ = luxe_Entity;
+Maze.prototype = $extend(luxe_Entity.prototype,{
+	init: function() {
+		this.cells = new haxe_ds_StringMap();
+		var _g1 = 1;
+		var _g = this.height + 1;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var _g3 = 1;
+			var _g2 = this.width + 1;
+			while(_g3 < _g2) {
+				var k = _g3++;
+				var c = new Cell("" + i + "-" + k,i,k,this.height,this.width);
+				{
+					this.cells.set("" + i + "-" + k,c);
+					c;
+				}
+			}
+		}
+		this.track = [];
+		this.startPath();
+	}
+	,startPath: function() {
 		var randColumn = Math.ceil(Math.random() * this.width);
 		var randRow = Math.ceil(Math.random() * this.height);
 		var name;
@@ -1588,7 +1623,7 @@ Maze.prototype = {
 			var nextCell1 = this.track.pop();
 			this.makePath(nextCell1);
 		} else if(this.track.length == 0) {
-			haxe_Log.trace("Completed",{ fileName : "Maze.hx", lineNumber : 76, className : "Maze", methodName : "makePath"});
+			haxe_Log.trace("Completed",{ fileName : "Maze.hx", lineNumber : 93, className : "Maze", methodName : "makePath"});
 			this.completed();
 			this.player = new Player({ name : "player", geometry : this.startCell.box, cell : this.startCell, maze : this, color : new phoenix_Color(0,0.8,0.6), depth : 2});
 		}
@@ -1607,12 +1642,12 @@ Maze.prototype = {
 		var $it0 = this.cells.iterator();
 		while( $it0.hasNext() ) {
 			var cell = $it0.next();
-			var b = cell.drawCell(this.cellSize,this.pos);
+			var b = cell.drawCell(this.cellSize,this.get_pos());
 			this.boxArray.push(b);
 		}
 	}
 	,reset: function() {
-		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 113, className : "Maze", methodName : "reset"});
+		haxe_Log.trace("Resetting",{ fileName : "Maze.hx", lineNumber : 131, className : "Maze", methodName : "reset"});
 		var _g = 0;
 		var _g1 = this.boxArray;
 		while(_g < _g1.length) {
@@ -1621,8 +1656,295 @@ Maze.prototype = {
 			box.drop();
 		}
 	}
+	,ondestroy: function() {
+		luxe_Entity.prototype.ondestroy.call(this);
+	}
 	,__class__: Maze
+});
+var luxe_ID = function(_name,_id) {
+	if(_id == null) _id = "";
+	if(_name == null) _name = "";
+	this.name = "";
+	this.name = _name;
+	if(_id == "") this.id = Luxe.utils.uniqueid(); else this.id = _id;
 };
+$hxClasses["luxe.ID"] = luxe_ID;
+luxe_ID.__name__ = ["luxe","ID"];
+luxe_ID.prototype = {
+	__class__: luxe_ID
+};
+var luxe_State = function(_options) {
+	this.inited = false;
+	this.enabled = false;
+	this.active = false;
+	luxe_ID.call(this,_options.name);
+};
+$hxClasses["luxe.State"] = luxe_State;
+luxe_State.__name__ = ["luxe","State"];
+luxe_State.__super__ = luxe_ID;
+luxe_State.prototype = $extend(luxe_ID.prototype,{
+	enable: function(_enable_with) {
+		this.machine.enable(this.name,_enable_with);
+	}
+	,disable: function(_disable_with) {
+		this.machine.disable(this.name,_disable_with);
+	}
+	,destroy: function() {
+		this.machine.kill(this.name);
+	}
+	,init: function() {
+	}
+	,update: function(dt) {
+	}
+	,onfixedupdate: function() {
+	}
+	,onleave: function(d) {
+	}
+	,onenter: function(d) {
+	}
+	,onenabled: function(d) {
+	}
+	,ondisabled: function(d) {
+	}
+	,onadded: function() {
+	}
+	,onremoved: function() {
+	}
+	,onrender: function() {
+	}
+	,onprerender: function() {
+	}
+	,onpostrender: function() {
+	}
+	,onreset: function() {
+	}
+	,ondestroy: function() {
+	}
+	,onkeyup: function(event) {
+	}
+	,onkeydown: function(event) {
+	}
+	,ontextinput: function(event) {
+	}
+	,oninputdown: function(name,event) {
+	}
+	,oninputup: function(name,event) {
+	}
+	,onmousedown: function(event) {
+	}
+	,onmouseup: function(event) {
+	}
+	,onmousemove: function(event) {
+	}
+	,onmousewheel: function(event) {
+	}
+	,ontouchdown: function(event) {
+	}
+	,ontouchup: function(event) {
+	}
+	,ontouchmove: function(event) {
+	}
+	,ongamepadup: function(event) {
+	}
+	,ongamepaddown: function(event) {
+	}
+	,ongamepadaxis: function(event) {
+	}
+	,ongamepaddevice: function(event) {
+	}
+	,onwindowmoved: function(event) {
+	}
+	,onwindowresized: function(event) {
+	}
+	,onwindowsized: function(event) {
+	}
+	,onwindowminimized: function(event) {
+	}
+	,onwindowrestored: function(event) {
+	}
+	,_init: function() {
+		if(!this.inited) {
+			this.inited = true;
+			this.init();
+		}
+	}
+	,__class__: luxe_State
+});
+var MenuState = function(_options) {
+	luxe_State.call(this,_options);
+};
+$hxClasses["MenuState"] = MenuState;
+MenuState.__name__ = ["MenuState"];
+MenuState.__super__ = luxe_State;
+MenuState.prototype = $extend(luxe_State.prototype,{
+	onenter: function(_) {
+		this.createButtons();
+	}
+	,onleave: function(_) {
+		haxe_Log.trace("leaving " + this.name,{ fileName : "MenuState.hx", lineNumber : 17, className : "MenuState", methodName : "onleave"});
+		this.playButton.destroy();
+		this.closeButton.destroy();
+	}
+	,createButtons: function() {
+		this.playButton = new luxe_Sprite({ name : "play", pos : (function($this) {
+			var $r;
+			var lhs = Luxe.core.screen.get_mid();
+			var rhs = new phoenix_Vector(128,0,null,null);
+			$r = new phoenix_Vector(lhs.x - rhs.x,lhs.y - rhs.y,lhs.z - rhs.z);
+			return $r;
+		}(this)), texture : Luxe.resources.cache.get("assets/play.png")});
+		this.closeButton = new luxe_Sprite({ name : "close", pos : (function($this) {
+			var $r;
+			var lhs1 = Luxe.core.screen.get_mid();
+			var rhs1 = new phoenix_Vector(128,0,null,null);
+			$r = new phoenix_Vector(lhs1.x + rhs1.x,lhs1.y + rhs1.y,lhs1.z + rhs1.z);
+			return $r;
+		}(this)), texture : Luxe.resources.cache.get("assets/close.png")});
+	}
+	,oninputup: function(event_name,e) {
+		if(event_name == "click") {
+			if(e.type == luxe_InputType.mouse) {
+				if(this.playButton.point_inside_AABB(e.mouse_event.pos)) this.machine.set("play",null,this);
+				if(this.closeButton.point_inside_AABB(e.mouse_event.pos)) Luxe.shutdown();
+			}
+		}
+	}
+	,__class__: MenuState
+});
+var PlayState = function(_options) {
+	this.cellSize = new phoenix_Vector(14,14);
+	luxe_State.call(this,_options);
+};
+$hxClasses["PlayState"] = PlayState;
+PlayState.__name__ = ["PlayState"];
+PlayState.__super__ = luxe_State;
+PlayState.prototype = $extend(luxe_State.prototype,{
+	onenter: function(_) {
+		haxe_Log.trace("entering " + this.name,{ fileName : "PlayState.hx", lineNumber : 19, className : "PlayState", methodName : "onenter"});
+		if(Luxe.core.app.platform == "web") {
+			this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 280) / this.cellSize.x,(Luxe.core.screen.get_h() - 256) / this.cellSize.y);
+			this.createDesktopControls();
+		} else {
+			this.gridSize = new phoenix_Vector((Luxe.core.screen.get_w() - 200) / this.cellSize.x,(Luxe.core.screen.get_h() - 340) / this.cellSize.y);
+			this.createDesktopControls();
+		}
+		this.maze = new Maze({ name : "grid", gridSize : this.gridSize, cellSize : this.cellSize, pos : new phoenix_Vector(4 * this.cellSize.x,4 * this.cellSize.y)});
+	}
+	,createControls: function() {
+		this.upButton = new BoundButton({ name : "up", pos : new phoenix_Vector(260,1220), texture : Luxe.resources.cache.get("assets/up.png")});
+		this.downButton = new BoundButton({ name : "down", pos : new phoenix_Vector(440,1195), texture : Luxe.resources.cache.get("assets/down.png")});
+		this.leftButton = new BoundButton({ name : "left", pos : new phoenix_Vector(88,1210), texture : Luxe.resources.cache.get("assets/left.png")});
+		this.rightButton = new BoundButton({ name : "right", pos : new phoenix_Vector(632,1210), texture : Luxe.resources.cache.get("assets/right.png")});
+		Luxe.input.bind_mouse("left",1);
+		Luxe.input.bind_mouse("right",1);
+		Luxe.input.bind_mouse("up",1);
+		Luxe.input.bind_mouse("down",1);
+	}
+	,createDesktopControls: function() {
+		this.upButton = new BoundButton({ name : "up", pos : (function($this) {
+			var $r;
+			var lhs = Luxe.core.screen.get_mid();
+			var rhs;
+			{
+				var _y = Luxe.core.screen.get_mid().y - 60;
+				rhs = new phoenix_Vector(-64,_y,null,null);
+			}
+			$r = new phoenix_Vector(lhs.x + rhs.x,lhs.y + rhs.y,lhs.z + rhs.z);
+			return $r;
+		}(this)), texture : Luxe.resources.cache.get("assets/up.png")});
+		this.downButton = new BoundButton({ name : "down", pos : (function($this) {
+			var $r;
+			var lhs1 = Luxe.core.screen.get_mid();
+			var rhs1;
+			{
+				var _y1 = Luxe.core.screen.get_mid().y - 60;
+				rhs1 = new phoenix_Vector(64,_y1,null,null);
+			}
+			$r = new phoenix_Vector(lhs1.x + rhs1.x,lhs1.y + rhs1.y,lhs1.z + rhs1.z);
+			return $r;
+		}(this)), texture : Luxe.resources.cache.get("assets/down.png")});
+		this.leftButton = new BoundButton({ name : "left", pos : (function($this) {
+			var $r;
+			var lhs2 = Luxe.core.screen.get_mid();
+			var rhs2;
+			{
+				var _y2 = Luxe.core.screen.get_mid().y - 60;
+				rhs2 = new phoenix_Vector(-192,_y2,null,null);
+			}
+			$r = new phoenix_Vector(lhs2.x + rhs2.x,lhs2.y + rhs2.y,lhs2.z + rhs2.z);
+			return $r;
+		}(this)), texture : Luxe.resources.cache.get("assets/left.png")});
+		this.rightButton = new BoundButton({ name : "right", pos : (function($this) {
+			var $r;
+			var lhs3 = Luxe.core.screen.get_mid();
+			var rhs3;
+			{
+				var _y3 = Luxe.core.screen.get_mid().y - 60;
+				rhs3 = new phoenix_Vector(192,_y3,null,null);
+			}
+			$r = new phoenix_Vector(lhs3.x + rhs3.x,lhs3.y + rhs3.y,lhs3.z + rhs3.z);
+			return $r;
+		}(this)), texture : Luxe.resources.cache.get("assets/right.png")});
+		this.closeButton = new BoundButton({ name : "close", pos : (function($this) {
+			var $r;
+			var _x = Luxe.core.screen.get_w() - 40;
+			$r = new phoenix_Vector(_x,42,null,null);
+			return $r;
+		}(this)), texture : Luxe.resources.cache.get("assets/close.png")});
+		Luxe.input.bind_mouse("left",1);
+		Luxe.input.bind_mouse("right",1);
+		Luxe.input.bind_mouse("up",1);
+		Luxe.input.bind_mouse("down",1);
+		Luxe.input.bind_mouse("reset",1);
+		if(Luxe.core.app.platform == "desktop" || Luxe.core.app.platform == "web") {
+			Luxe.input.bind_key("click",snow_system_input_Keycodes.space);
+			Luxe.input.bind_key("left",snow_system_input_Keycodes.key_a);
+			Luxe.input.bind_key("right",snow_system_input_Keycodes.key_d);
+			Luxe.input.bind_key("up",snow_system_input_Keycodes.key_w);
+			Luxe.input.bind_key("down",snow_system_input_Keycodes.key_s);
+			Luxe.input.bind_key("reset",snow_system_input_Keycodes.key_r);
+		}
+	}
+	,oninputup: function(event_name,e) {
+		if(e.type == luxe_InputType.mouse) switch(event_name) {
+		case "reset":
+			if(this.closeButton.point_inside_circle(e.mouse_event.pos)) {
+				haxe_Log.trace("res",{ fileName : "PlayState.hx", lineNumber : 137, className : "PlayState", methodName : "oninputup"});
+				this.maze.reset();
+			}
+			break;
+		case "left":
+			if(this.maze.player != null && this.leftButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
+			break;
+		case "right":
+			if(this.maze.player != null && this.rightButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
+			break;
+		case "up":
+			if(this.maze.player != null && this.upButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
+			break;
+		case "down":
+			if(this.maze.player != null && this.downButton.point_inside_circle(e.mouse_event.pos)) this.maze.player.move(event_name);
+			break;
+		}
+		if(e.type == luxe_InputType.keys) switch(event_name) {
+		case "left":
+			this.maze.player.move(event_name);
+			break;
+		case "right":
+			this.maze.player.move(event_name);
+			break;
+		case "up":
+			this.maze.player.move(event_name);
+			break;
+		case "down":
+			this.maze.player.move(event_name);
+			break;
+		case "reset":
+			break;
+		}
+	}
+	,__class__: PlayState
+});
 var Player = function(options) {
 	if(options.cell != null) {
 		this.cell = options.cell;
@@ -1665,7 +1987,7 @@ Player.prototype = $extend(luxe_Visual.prototype,{
 		}
 		haxe_Log.trace(this.pathArray.length,{ fileName : "Player.hx", lineNumber : 95, className : "Player", methodName : "move"});
 		this.pathArray[this.pathArray.length - 1].box.set_color(new phoenix_Color(0,0.8,0.6));
-		this.pathArray[this.pathArray.length - 2].box.set_color(new phoenix_Color(0.2,0.6,0));
+		this.pathArray[this.pathArray.length - 2].box.set_color(new phoenix_Color(0.88,1,0.88));
 	}
 	,reset: function() {
 		this.destroy();
@@ -3897,18 +4219,6 @@ luxe_Camera.prototype = $extend(luxe_Entity.prototype,{
 	,__class__: luxe_Camera
 	,__properties__: $extend(luxe_Entity.prototype.__properties__,{set_size_mode:"set_size_mode",get_size_mode:"get_size_mode",set_size:"set_size",get_size:"get_size",set_minimum_zoom:"set_minimum_zoom",get_minimum_zoom:"get_minimum_zoom",set_zoom:"set_zoom",get_zoom:"get_zoom",set_center:"set_center",get_center:"get_center",set_viewport:"set_viewport",get_viewport:"get_viewport"})
 });
-var luxe_ID = function(_name,_id) {
-	if(_id == null) _id = "";
-	if(_name == null) _name = "";
-	this.name = "";
-	this.name = _name;
-	if(_id == "") this.id = Luxe.utils.uniqueid(); else this.id = _id;
-};
-$hxClasses["luxe.ID"] = luxe_ID;
-luxe_ID.__name__ = ["luxe","ID"];
-luxe_ID.prototype = {
-	__class__: luxe_ID
-};
 var luxe_Component = function(_options) {
 	var _name = "";
 	if(_options != null) {
@@ -6269,6 +6579,81 @@ luxe_Parcel.prototype = {
 	,__class__: luxe_Parcel
 	,__properties__: {get_length:"get_length",get_listed:"get_listed"}
 };
+var luxe_ParcelProgress = function(_options) {
+	this.height = 0;
+	this.width = 0;
+	var _view_width = Luxe.core.screen.get_w();
+	var _view_height = Luxe.core.screen.get_h();
+	if(Luxe.camera.get_size() != null) {
+		_view_width = Luxe.camera.get_size().x;
+		_view_height = Luxe.camera.get_size().y;
+	}
+	var _view_mid_x = Math.floor(_view_width / 2);
+	var _view_mid_y = Math.floor(_view_height / 2);
+	this.width = Math.max(Math.floor(_view_width * 0.75),2);
+	this.height = Math.max(Math.floor(_view_height * 0.002),2);
+	this.options = _options;
+	if(this.options.no_visuals == null) this.options.no_visuals = false;
+	this.options.no_visuals;
+	if(this.options.bar == null) this.options.bar = new phoenix_Color().rgb(3421236);
+	this.options.bar;
+	if(this.options.bar_border == null) this.options.bar_border = new phoenix_Color().rgb(1447446);
+	this.options.bar_border;
+	if(this.options.background == null) this.options.background = new phoenix_Color().rgb(592137);
+	this.options.background;
+	if(this.options.fade_in == null) this.options.fade_in = true;
+	this.options.fade_in;
+	if(this.options.fade_out == null) this.options.fade_out = true;
+	this.options.fade_out;
+	if(this.options.fade_time == null) this.options.fade_time = 0.3;
+	this.options.fade_time;
+	var fade_alpha = this.options.background.a;
+	if(this.options.fade_in) {
+		this.options.background.a = 0;
+		this.options.bar.a = 0;
+		this.options.bar_border.a = 0;
+	}
+	if(!this.options.no_visuals) {
+		var ypos = Math.floor(_view_height * 0.60);
+		var half_width = Math.floor(this.width / 2);
+		var half_height = Math.floor(this.height / 2);
+		this.background = new luxe_Sprite({ no_scene : true, size : new phoenix_Vector(_view_width,_view_height), centered : false, color : this.options.background, depth : 998, visible : true});
+		this.progress_bar = new luxe_Sprite({ pos : new phoenix_Vector(_view_mid_x - half_width,ypos - half_height), size : new phoenix_Vector(2,this.height), no_scene : true, centered : false, color : this.options.bar, depth : 998});
+		this.progress_border = new luxe_Visual({ color : this.options.bar, no_scene : true, pos : new phoenix_Vector(_view_mid_x - half_width,ypos - half_height), geometry : Luxe.draw.rectangle({ w : this.width, h : this.height, depth : 998.1}), depth : 998.1});
+		if(this.options.fade_in) {
+			this.background.color.tween(this.options.fade_time,{ a : fade_alpha},true);
+			this.progress_bar.color.tween(this.options.fade_time,{ a : 1},true);
+			this.progress_border.color.tween(this.options.fade_time,{ a : 1},true);
+		}
+	}
+	this.options.parcel.on(1,$bind(this,this.onprogress));
+	this.options.parcel.on(2,$bind(this,this.oncomplete));
+};
+$hxClasses["luxe.ParcelProgress"] = luxe_ParcelProgress;
+luxe_ParcelProgress.__name__ = ["luxe","ParcelProgress"];
+luxe_ParcelProgress.prototype = {
+	set_progress: function(amount) {
+		if(amount < 0) amount = 0;
+		if(amount > 1) amount = 1;
+		this.progress_bar.size.set_x(Math.ceil(this.width * amount));
+	}
+	,onprogress: function(_state) {
+		var amount = _state.index / _state.total;
+		this.set_progress(amount);
+	}
+	,oncomplete: function(p) {
+		if(!this.options.no_visuals && this.options.fade_out) {
+			this.do_complete();
+			this.background.color.tween(this.options.fade_time,{ a : 0},true);
+			this.progress_bar.color.tween(this.options.fade_time,{ a : 0},true);
+			this.progress_border.color.tween(this.options.fade_time,{ a : 0},true);
+		} else this.do_complete();
+	}
+	,do_complete: function() {
+		if(this.options.oncomplete != null) this.options.oncomplete(this.options.parcel);
+	}
+	,__class__: luxe_ParcelProgress
+};
 var luxe_Physics = function(_core) {
 	this.step_delta = 0.016666666666666666;
 	this.step_rate = 0.016666666666666666;
@@ -7006,106 +7391,481 @@ luxe_Cursor.prototype = {
 	,__class__: luxe_Cursor
 	,__properties__: {set_pos:"set_pos",get_pos:"get_pos",set_lock:"set_lock",get_lock:"get_lock",set_grab:"set_grab",get_grab:"get_grab",set_visible:"set_visible",get_visible:"get_visible"}
 };
-var luxe_Sprite = function(options) {
-	this.flipy = false;
-	this.flipx = false;
-	this.centered = true;
-	this.set_uv(new phoenix_Rectangle());
-	if(options == null) throw new js__$Boot_HaxeError(luxe_DebugError.null_assertion("options was null" + (" ( " + "Sprite requires non-null options" + " )")));
-	if(options.centered != null) this.set_centered(options.centered);
-	if(options.flipx != null) this.set_flipx(options.flipx);
-	if(options.flipy != null) this.set_flipy(options.flipy);
-	luxe_Visual.call(this,options);
+var luxe_States = function(_options) {
+	this._state_count = 0;
+	this.active_count = 0;
+	var _name = "";
+	if(_options != null && _options.name != null) _name = _options.name;
+	luxe_Objects.call(this,_name == ""?Luxe.utils.uniqueid():_name);
+	this._states = new haxe_ds_StringMap();
+	this.active_states = [];
+	Luxe.core.emitter.on(2,$bind(this,this.init));
+	Luxe.core.emitter.on(8,$bind(this,this.ondestroy));
+	Luxe.core.emitter.on(6,$bind(this,this.update));
+	Luxe.core.emitter.on(9,$bind(this,this.prerender));
+	Luxe.core.emitter.on(11,$bind(this,this.postrender));
+	Luxe.core.emitter.on(10,$bind(this,this.render));
+	Luxe.core.emitter.on(12,$bind(this,this.keydown));
+	Luxe.core.emitter.on(13,$bind(this,this.keyup));
+	Luxe.core.emitter.on(14,$bind(this,this.textinput));
+	Luxe.core.emitter.on(16,$bind(this,this.inputup));
+	Luxe.core.emitter.on(15,$bind(this,this.inputdown));
+	Luxe.core.emitter.on(18,$bind(this,this.mouseup));
+	Luxe.core.emitter.on(17,$bind(this,this.mousedown));
+	Luxe.core.emitter.on(19,$bind(this,this.mousemove));
+	Luxe.core.emitter.on(20,$bind(this,this.mousewheel));
+	Luxe.core.emitter.on(22,$bind(this,this.touchup));
+	Luxe.core.emitter.on(21,$bind(this,this.touchdown));
+	Luxe.core.emitter.on(23,$bind(this,this.touchmove));
+	Luxe.core.emitter.on(26,$bind(this,this.gamepadup));
+	Luxe.core.emitter.on(25,$bind(this,this.gamepaddown));
+	Luxe.core.emitter.on(24,$bind(this,this.gamepadaxis));
+	Luxe.core.emitter.on(27,$bind(this,this.gamepaddevice));
+	Luxe.core.emitter.on(29,$bind(this,this.windowmoved));
+	Luxe.core.emitter.on(30,$bind(this,this.windowresized));
+	Luxe.core.emitter.on(31,$bind(this,this.windowsized));
+	Luxe.core.emitter.on(32,$bind(this,this.windowminimized));
+	Luxe.core.emitter.on(33,$bind(this,this.windowrestored));
 };
-$hxClasses["luxe.Sprite"] = luxe_Sprite;
-luxe_Sprite.__name__ = ["luxe","Sprite"];
-luxe_Sprite.__super__ = luxe_Visual;
-luxe_Sprite.prototype = $extend(luxe_Visual.prototype,{
-	on_geometry_created: function() {
-		luxe_Visual.prototype.on_geometry_created.call(this);
-		if(this.texture != null) {
-			this.set_uv((function($this) {
-				var $r;
-				if($this.options.uv == null) $this.options.uv = new phoenix_Rectangle(0,0,$this.texture.width,$this.texture.height);
-				$r = $this.options.uv;
-				return $r;
-			}(this)));
-			if(this.texture.resource_type == 5) this.set_flipy(true);
-		}
-		this.set_centered(!(!this.centered));
-		this.set_flipx(!(!this.flipx));
-		this.set_flipy(!(!this.flipy));
-	}
-	,set_geometry: function(_g) {
-		this.geometry_quad = _g;
-		return luxe_Visual.prototype.set_geometry.call(this,_g);
-	}
-	,point_inside: function(_p) {
-		if(this.geometry == null) return false;
-		return Luxe.utils.geometry.point_in_geometry(_p,this.geometry);
-	}
-	,point_inside_AABB: function(_p) {
-		if(this.get_pos() == null) return false;
-		if(this.size == null) return false;
-		var _s_x = this.size.x * this.get_scale().x;
-		var _s_y = this.size.y * this.get_scale().y;
-		if(this.centered) {
-			var _hx = _s_x / 2;
-			var _hy = _s_y / 2;
-			if(_p.x < this.get_pos().x - _hx) return false;
-			if(_p.y < this.get_pos().y - _hy) return false;
-			if(_p.x > this.get_pos().x + _s_x - _hx) return false;
-			if(_p.y > this.get_pos().y + _s_y - _hy) return false;
-		} else {
-			if(_p.x < this.get_pos().x) return false;
-			if(_p.y < this.get_pos().y) return false;
-			if(_p.x > this.get_pos().x + _s_x) return false;
-			if(_p.y > this.get_pos().y + _s_y) return false;
-		}
-		return true;
-	}
-	,set_uv: function(_uv) {
-		if(this.geometry_quad != null) this.geometry_quad.uv(_uv);
-		this.uv = _uv;
-		phoenix_Rectangle.listen(this.uv,$bind(this,this._uv_change));
-		return this.uv;
-	}
-	,set_flipy: function(_v) {
-		if(_v == this.flipy) return this.flipy;
-		if(this.geometry_quad != null) this.geometry_quad.set_flipy(_v);
-		return this.flipy = _v;
-	}
-	,set_flipx: function(_v) {
-		if(_v == this.flipx) return this.flipx;
-		if(this.geometry_quad != null) this.geometry_quad.set_flipx(_v);
-		return this.flipx = _v;
-	}
-	,set_size: function(_v) {
-		if(this.geometry_quad != null) {
-			this.geometry_quad.resize(new phoenix_Vector(_v.x,_v.y));
-			if(!this._has_custom_origin) {
-				if(this.centered) this.set_origin(new phoenix_Vector(_v.x,_v.y,_v.z,_v.w).divideScalar(2));
+$hxClasses["luxe.States"] = luxe_States;
+luxe_States.__name__ = ["luxe","States"];
+luxe_States.__super__ = luxe_Objects;
+luxe_States.prototype = $extend(luxe_Objects.prototype,{
+	add: function(_state) {
+		this._states.set(_state.name,_state);
+		this._state_count++;
+		_state.machine = this;
+		_state.onadded();
+		if(Luxe.core.inited) {
+			if(!_state.inited) {
+				_state.inited = true;
+				_state.init();
 			}
 		}
-		return luxe_Visual.prototype.set_size.call(this,_v);
+		return _state;
 	}
-	,set_centered: function(_c) {
-		if(this.size != null) {
-			if(_c) this.set_origin(new phoenix_Vector(this.size.x / 2,this.size.y / 2)); else this.set_origin(new phoenix_Vector());
+	,remove: function(_name,_leave_with) {
+		if(this._states.exists(_name)) {
+			var _state = this._states.get(_name);
+			if(_state != null) {
+				if(_state.active) {
+					this.leave(_state,_leave_with);
+					if(_state == this.current_state) this.current_state = null;
+				}
+				if(_state.enabled) this.disable(_state.name);
+				_state.onremoved();
+				this._states.remove(_name);
+				this._state_count--;
+			}
+			return _state;
 		}
-		return this.centered = _c;
+		return null;
 	}
-	,_uv_change: function(_v) {
-		this.set_uv(this.uv);
+	,kill: function(_name) {
+		if(this._state_count > 0) {
+			if(this._states.exists(_name)) {
+				var _state = this.remove(_name);
+				if(_state != null) _state.ondestroy();
+			}
+		}
 	}
-	,init: function() {
-		luxe_Visual.prototype.init.call(this);
+	,enabled: function(_name) {
+		if(this._state_count == 0) return false;
+		var state = this._states.get(_name);
+		if(state != null) return state.enabled;
+		return false;
 	}
-	,ondestroy: function() {
-		luxe_Visual.prototype.ondestroy.call(this);
+	,enable: function(_name,_enable_with) {
+		if(this._state_count == 0) return;
+		var state = this._states.get(_name);
+		if(state != null) {
+			state.onenabled(_enable_with);
+			state.active = true;
+			state.enabled = true;
+			this.active_states.push(state);
+			this.active_count++;
+			null;
+		}
 	}
-	,__class__: luxe_Sprite
-	,__properties__: $extend(luxe_Visual.prototype.__properties__,{set_uv:"set_uv",set_flipy:"set_flipy",set_flipx:"set_flipx",set_centered:"set_centered"})
+	,disable: function(_name,_disable_with) {
+		if(this._state_count == 0) return;
+		var state = this._states.get(_name);
+		if(state != null) {
+			state.ondisabled(_disable_with);
+			state.active = false;
+			state.enabled = false;
+			HxOverrides.remove(this.active_states,state);
+			this.active_count--;
+			null;
+		}
+	}
+	,enter: function(_state,_enter_with) {
+		_state.onenter(_enter_with);
+		this.active_states.push(_state);
+		this.active_count++;
+		_state.active = true;
+	}
+	,leave: function(_state,_leave_with) {
+		_state.active = false;
+		HxOverrides.remove(this.active_states,_state);
+		this.active_count--;
+		_state.onleave(_leave_with);
+	}
+	,set: function(name,_enter_with,_leave_with) {
+		if(!this._states.exists(name)) {
+			haxe_Log.trace("   i / states / " + ("cannot find state named " + name + ", is it added to this state machine?"),{ fileName : "States.hx", lineNumber : 317, className : "luxe.States", methodName : "set"});
+			return false;
+		}
+		this.unset(_leave_with);
+		this.current_state = this._states.get(name);
+		this.enter(this.current_state,_enter_with);
+		return true;
+	}
+	,unset: function(_leave_with) {
+		if(this.current_state != null) {
+			this.leave(this.current_state,_leave_with);
+			this.current_state = null;
+		}
+	}
+	,destroy: function() {
+		if(this._state_count > 0) {
+			var $it0 = this._states.iterator();
+			while( $it0.hasNext() ) {
+				var state = $it0.next();
+				state.destroy();
+			}
+		}
+		Luxe.core.emitter.off(2,$bind(this,this.init));
+		Luxe.core.emitter.off(8,$bind(this,this.ondestroy));
+		Luxe.core.emitter.off(6,$bind(this,this.update));
+		Luxe.core.emitter.off(9,$bind(this,this.prerender));
+		Luxe.core.emitter.off(11,$bind(this,this.postrender));
+		Luxe.core.emitter.off(10,$bind(this,this.render));
+		Luxe.core.emitter.off(12,$bind(this,this.keydown));
+		Luxe.core.emitter.off(13,$bind(this,this.keyup));
+		Luxe.core.emitter.off(14,$bind(this,this.textinput));
+		Luxe.core.emitter.off(16,$bind(this,this.inputup));
+		Luxe.core.emitter.off(15,$bind(this,this.inputdown));
+		Luxe.core.emitter.off(18,$bind(this,this.mouseup));
+		Luxe.core.emitter.off(17,$bind(this,this.mousedown));
+		Luxe.core.emitter.off(19,$bind(this,this.mousemove));
+		Luxe.core.emitter.off(20,$bind(this,this.mousewheel));
+		Luxe.core.emitter.off(22,$bind(this,this.touchup));
+		Luxe.core.emitter.off(21,$bind(this,this.touchdown));
+		Luxe.core.emitter.off(23,$bind(this,this.touchmove));
+		Luxe.core.emitter.off(26,$bind(this,this.gamepadup));
+		Luxe.core.emitter.off(25,$bind(this,this.gamepaddown));
+		Luxe.core.emitter.off(24,$bind(this,this.gamepadaxis));
+		Luxe.core.emitter.off(27,$bind(this,this.gamepaddevice));
+		Luxe.core.emitter.off(29,$bind(this,this.windowmoved));
+		Luxe.core.emitter.off(30,$bind(this,this.windowresized));
+		Luxe.core.emitter.off(31,$bind(this,this.windowsized));
+		Luxe.core.emitter.off(32,$bind(this,this.windowminimized));
+		Luxe.core.emitter.off(33,$bind(this,this.windowrestored));
+		this.emit(8);
+	}
+	,init: function(_) {
+		if(this._state_count > 0) {
+			var $it0 = this._states.iterator();
+			while( $it0.hasNext() ) {
+				var state = $it0.next();
+				if(!state.inited) {
+					state.inited = true;
+					state.init();
+				}
+			}
+		}
+	}
+	,reset: function(_) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onreset();
+			}
+		}
+	}
+	,update: function(dt) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.update(dt);
+			}
+		}
+	}
+	,ondestroy: function(_) {
+		this.destroy();
+	}
+	,render: function(_) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onrender();
+			}
+		}
+	}
+	,prerender: function(_) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onprerender();
+			}
+		}
+	}
+	,postrender: function(_) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onpostrender();
+			}
+		}
+	}
+	,keydown: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onkeydown(e);
+			}
+		}
+	}
+	,keyup: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onkeyup(e);
+			}
+		}
+	}
+	,textinput: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.ontextinput(e);
+			}
+		}
+	}
+	,inputup: function(_event) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.oninputup(_event.name,_event.event);
+			}
+		}
+	}
+	,inputdown: function(_event) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.oninputdown(_event.name,_event.event);
+			}
+		}
+	}
+	,mousedown: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onmousedown(e);
+			}
+		}
+	}
+	,mousewheel: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onmousewheel(e);
+			}
+		}
+	}
+	,mouseup: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onmouseup(e);
+			}
+		}
+	}
+	,mousemove: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onmousemove(e);
+			}
+		}
+	}
+	,touchdown: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.ontouchdown(e);
+			}
+		}
+	}
+	,touchup: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.ontouchup(e);
+			}
+		}
+	}
+	,touchmove: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.ontouchmove(e);
+			}
+		}
+	}
+	,gamepadaxis: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.ongamepadaxis(e);
+			}
+		}
+	}
+	,gamepadup: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.ongamepadup(e);
+			}
+		}
+	}
+	,gamepaddown: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.ongamepaddown(e);
+			}
+		}
+	}
+	,gamepaddevice: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.ongamepaddevice(e);
+			}
+		}
+	}
+	,windowmoved: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onwindowmoved(e);
+			}
+		}
+	}
+	,windowresized: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onwindowresized(e);
+			}
+		}
+	}
+	,windowsized: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onwindowsized(e);
+			}
+		}
+	}
+	,windowminimized: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onwindowminimized(e);
+			}
+		}
+	}
+	,windowrestored: function(e) {
+		if(this.active_count > 0) {
+			var _g = 0;
+			var _g1 = this.active_states;
+			while(_g < _g1.length) {
+				var state = _g1[_g];
+				++_g;
+				state.onwindowrestored(e);
+			}
+		}
+	}
+	,__class__: luxe_States
 });
 var luxe_Text = function(_options) {
 	this.text_options = _options;
