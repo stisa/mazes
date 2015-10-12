@@ -117,6 +117,7 @@ class Maze extends Entity {
     name = Std.string(randRow)+"-"+Std.string(randColumn);
 
     cells[name].isStart = true;
+    cells[name].visited = true;
     startCell = cells[name];
 
     for ( cell in cells ) {

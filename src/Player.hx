@@ -3,6 +3,7 @@ import luxe.Visual;
 import luxe.options.VisualOptions;
 import luxe.Color;
 import luxe.tween.Actuate;
+import Constants;
 
 typedef PlayerOptions = {
 
@@ -20,6 +21,7 @@ class Player extends Visual {
   var column : Int;
   var row : Int;
   var pathArray : Array<Cell>;
+  public var hasWon : Bool = false;
 
     override public function new(options: PlayerOptions) {
 
@@ -48,6 +50,7 @@ class Player extends Visual {
           var next : Cell =maze.cells['$row-$column'];
           if ( next != null && next.isLast ==true ) {
             trace("Goal Reached");
+            hasWon = true;
           }
           else if ( next != null && next.visited==true ){
             pathArray.push(next); //update head cell
@@ -60,6 +63,7 @@ class Player extends Visual {
           var next : Cell =maze.cells['$row-$column'];
           if ( next != null && next.isLast ==true ) {
             trace("Goal Reached");
+            hasWon = true;
           }
           else if ( next != null && next.visited==true ){
             pathArray.push(next);
@@ -72,6 +76,7 @@ class Player extends Visual {
           var next : Cell =maze.cells['$row-$column'];
           if ( next != null && next.isLast ==true ) {
             trace("Goal Reached");
+            hasWon = true;
           }
           else if ( next != null && next.visited==true ){
             pathArray.push(next);
@@ -84,6 +89,7 @@ class Player extends Visual {
           var next : Cell =maze.cells['$row-$column'];
           if ( next != null && next.isLast ==true ) {
             trace("Goal Reached");
+            hasWon = true;
           }
           else if ( next != null && next.visited==true ){
             pathArray.push(next);
@@ -92,7 +98,8 @@ class Player extends Visual {
             --row;
           }
       }
-      trace(pathArray.length);
+      Constants.score = pathArray.length;
+      //trace(pathArray.length);
       pathArray[pathArray.length -1].box.color = new Color(0,0.8,0.6); // head cell
       pathArray[pathArray.length -2].box.color = new Color(0.88,1,0.88); // make the old head part of the tail
     }

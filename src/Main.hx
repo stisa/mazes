@@ -44,6 +44,7 @@ class Main extends luxe.Game {
     stateSelector = new States();
     stateSelector.add( new MenuState({name: "menu"}));
     stateSelector.add( new PlayState({name: "play"}));
+    stateSelector.add( new ScoreState({name: "score"}));
     // Bind button clicks
     Luxe.input.bind_mouse('click', MouseButton.left);
 

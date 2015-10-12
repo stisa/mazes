@@ -14,49 +14,26 @@ class PlayState extends State {
   var cellSize : Vector = new Vector(14,14);
   var maze : Maze;
   var gridSize : Vector;
+  var buttonArray : Array<BoundButton>;
 
   override function onenter<T>(_:T){
-    trace("entering "+this.name);
+    trace("Entering "+this.name);
     if (Luxe.snow.platform == 'web') {
       gridSize = new Vector( (Luxe.screen.w-280)/cellSize.x, ( Luxe.screen.h-256 )/cellSize.y );
-      createDesktopControls();
     } else {
       gridSize = new Vector( (Luxe.screen.w-200)/cellSize.x, ( Luxe.screen.h-340 )/cellSize.y );
-      createDesktopControls();
     }
+    buttonArray = [];
+    createDesktopControls();
     maze = new Maze({ name: 'grid', gridSize: gridSize, cellSize: cellSize, pos: new Vector(4*cellSize.x,4*cellSize.y) });
   }
 
-  function createControls() {
-
-    upButton = new BoundButton({
-      name: "up",
-      pos: new Vector(260,1220),
-      texture: Luxe.resources.texture('assets/up.png')
-    });
-    downButton = new BoundButton({
-      name: "down",
-      pos: new Vector(440,1195),
-      texture: Luxe.resources.texture('assets/down.png')
-    });
-    leftButton = new BoundButton({
-      name: "left",
-      pos: new Vector(88,1210),
-      texture: Luxe.resources.texture('assets/left.png')
-    });
-    rightButton = new BoundButton({
-      name: "right",
-      pos: new Vector(632,1210),
-      texture: Luxe.resources.texture('assets/right.png')
-    });
-
-    // Bind mouse/touch controls
-    //if target == mobile
-    Luxe.input.bind_mouse('left', MouseButton.left);
-    Luxe.input.bind_mouse('right', MouseButton.left);
-    Luxe.input.bind_mouse('up', MouseButton.left);
-    Luxe.input.bind_mouse('down', MouseButton.left);
-
+  override function onleave<T>(_:T){
+    maze.reset();
+    for (button in buttonArray) {
+      button.destroy();
+    }
+    maze.destroy();
   }
 
   function createDesktopControls() {
@@ -111,31 +88,15 @@ class PlayState extends State {
 
     }
 
+    buttonArray = [upButton,downButton,leftButton,rightButton,closeButton];
   }
   override function oninputup ( event_name:String, e:InputEvent ) {
     if (e.type == mouse) {
       switch( event_name ) {
-      /*
-     case 'click':
-          if ( mazeButton.point_inside_AABB(e.mouse_event.pos) ) {
-              this.machine.set('play');
-              //this.machine.unset(this);
-              maze = new Maze({ name: 'grid', gridSize: gridSize, cellSize: cellSize, pos: new Vector(4*cellSize.x,4*cellSize.y) });
-          }
-          if ( resetButton.point_inside_AABB(e.mouse_event.pos) ) {
-            //this.machine.current_state.unset();
-            //Reset the scene
-            trace("res");
-            maze.reset();
-            //maze_once = false;
-          }
-          */
         //control click
         case 'reset':
           if ( closeButton.point_inside_circle(e.mouse_event.pos) ) {
-            //Reset the scene
-            trace("res");
-            maze.reset();
+            this.machine.set('score',null,this);
           }
         case 'left':
           if ( maze.player != null && leftButton.point_inside_circle(e.mouse_event.pos) ) {
@@ -176,5 +137,9 @@ class PlayState extends State {
       }  //switch
     } //Key
   }
-
+  override function update(dt:Float) {
+    if(maze.player != null && maze.player.hasWon) {
+      this.machine.set('score',null,this);
+    }
+  }
 } //PlayState

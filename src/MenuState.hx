@@ -24,15 +24,11 @@ class MenuState extends State {
       name: "play",
       pos: Luxe.screen.mid - new Vec(128,0),
       texture: Luxe.resources.texture('assets/play.png')
-      //size: new Vector(96,64),
-      //color: new Color(0,0,0)
     });
     closeButton = new Sprite({
       name: "close",
       pos: Luxe.screen.mid + new Vec(128,0),
       texture: Luxe.resources.texture('assets/close.png')
-      //size: new Vector(96,64),
-      //color: new Color(1,0.2,0.2)
     });
   }// createButtons
 
