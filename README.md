@@ -4,10 +4,10 @@ Demo: [mazes](http://blog.tisato.me/mazes/)
 
 
 ## TODO
-- [ ] Use keyboard controls for desktop and web
+- [x] Use keyboard controls for desktop and web
 - [ ] Score
 - [ ] Stop the game when the goal is reached
-- [ ] Rework the game to use Scenes
+- [x] Rework the game to use States
 ---
 - [x] Backtracking
 - [x] Function to select start point and goal ( green/red )

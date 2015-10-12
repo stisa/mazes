@@ -14,7 +14,7 @@ class Cell {
   public var isLast : Bool = false;
 
   public function new ( nome: String, riga: Int, colonna: Int, maze_righe, maze_colonne) {
-
+    name = nome;
     row = riga;
     column = colonna;
 

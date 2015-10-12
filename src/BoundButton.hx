@@ -2,31 +2,35 @@
 import luxe.Visual;
 import luxe.options.VisualOptions;
 import luxe.Vector;
+import luxe.Sprite;
+import luxe.options.SpriteOptions;
 
 typedef BoundButtonOptions = {
 
-  > VisualOptions,
+  > SpriteOptions,
 
   @:optional var radius : Float;
   @:optional var sides : Int;
 }
 
 
-class BoundButton extends Visual {
+class BoundButton extends Sprite {
 
   var radius : Float;
   var sides : Int;
 
-  override function new( options:BoundButtonOptions) {
+  override public function new( options:BoundButtonOptions) {
     if(options.radius != null) {
       radius = options.radius;
     }
     if(options.sides != null) {
       sides = options.sides;
     }
-
-    options.geometry = Luxe.draw.ngon({ x: 0, y: 0, solid: true, sides: sides, r: radius });
-
+    if(options.texture == null) {
+      options.geometry = Luxe.draw.ngon({ x: 0, y: 0, solid: true, sides: sides, r: radius });
+    } else {
+      radius = options.texture.width/2;
+    }
     super(options);
 
   } // new

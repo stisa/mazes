@@ -94,7 +94,7 @@ class Player extends Visual {
       }
       trace(pathArray.length);
       pathArray[pathArray.length -1].box.color = new Color(0,0.8,0.6); // head cell
-      pathArray[pathArray.length -2].box.color = new Color(0.2,0.6,0); // make the old head part of the tail
+      pathArray[pathArray.length -2].box.color = new Color(0.88,1,0.88); // make the old head part of the tail
     }
 
     public function reset(){

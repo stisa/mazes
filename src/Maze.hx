@@ -2,24 +2,41 @@
 import luxe.Vector;
 import luxe.Sprite;
 import luxe.Color;
+import luxe.Entity;
+import luxe.options.EntityOptions;
 
-class Maze  {
+typedef MazeOptions = {
+  > EntityOptions,
+
+  var gridSize: Vector;
+  var cellSize: Vector;
+
+}
+
+
+class Maze extends Entity {
 
   public var width : Int;
   public var height : Int;
   public var cellSize : Vector;
   public var cells : Map<String,Cell>;
-  public var pos : Vector;
+  //public var pos : Vector;
   public var startCell : Cell;
   public var player : Player;
   var track : Array<Cell>;
 
-  public function new ( gridSize: Vector, dimCella: Vector, posiz:Vector){
+  // TODO: Use typedef for mazeoptions
+  override public function new (options : MazeOptions){ // gridSize: Vector, dimCella: Vector, posiz:Vector){
 
-    height = Std.int(gridSize.y); // number of rows
-    width = Std.int(gridSize.x); // number of height
-    cellSize = dimCella;
-    pos = posiz;
+    height = Std.int(options.gridSize.y); // number of rows
+    width = Std.int(options.gridSize.x); // number of height
+    cellSize = options.cellSize;
+    //pos = posiz;
+    super( options );
+  }
+
+  override function init() {
+
     cells = new Map();
     for( i in 1...(height+1)){ // Create the grid
 
@@ -87,6 +104,7 @@ class Maze  {
   } // makePath
 
   var boxArray : Array<phoenix.geometry.QuadGeometry> = [];
+
   function completed(){
     var randColumn : Int = Math.ceil(Math.random()*width);
     var randRow : Int = Math.ceil(Math.random()*height);
