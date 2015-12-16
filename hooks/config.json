@@ -1,7 +1,7 @@
 {
 	"dirs": {
-	  "gh_pages": "gh-pages",
-	  "bin" : "bin/web",
-	  "git_files" : "hooks/git_files"
+	  "gh_pages": "C:\\Users\\silvio\\Documents\\Luxe\\mazes\\gh-pages",
+	  "bin" : "C:\\Users\\silvio\\Documents\\Luxe\\mazes\\bin\\web",
+	  "git_files" : "C:\\Users\\silvio\\Documents\\Luxe\\mazes\\hooks\\git_files"
   	}
 }
