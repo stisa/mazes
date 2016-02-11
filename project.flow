@@ -31,7 +31,7 @@
       dependencies : {
         luxe : '*',
       },
-     post : {    // FIXME: on `flow run web` the script executes fine but then exites without running
+     post : {
         priority : 1,
         name : 'copy-to-gh-pages',
         desc : 'copy bin/web to gh-pages',

@@ -90,7 +90,7 @@ class PlayState extends State {
 
     buttonArray = [upButton,downButton,leftButton,rightButton,closeButton];
   }
-  override function oninputup ( event_name:String, e:InputEvent ) {
+  override function oninputdown ( event_name:String, e:InputEvent ) {
     if (e.type == mouse) {
       switch( event_name ) {
         //control click

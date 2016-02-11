@@ -8,17 +8,24 @@ import luxe.Text;
 class ScoreState extends State {
 
   var closeButton : BoundButton;
+  var playButton : BoundButton;
+  var scoreText : luxe.Text;
 
   override function onenter<T>(_:T){
     var score : Int = Constants.score;
     trace("Entering "+this.name);
 
-    Luxe.draw.text({
+    scoreText = new luxe.Text({
       color : new Color(0,0,0),
       pos: Luxe.screen.mid,
       point_size: 48,
       align: TextAlign.center,
       text: 'You scored $score points'
+    });
+    playButton = new BoundButton({
+      name: "play",
+      pos: Luxe.screen.mid + new Vec(-128,256),
+      texture: Luxe.resources.texture('assets/play.png')
     });
     closeButton = new BoundButton({
       name: "close",
@@ -26,13 +33,22 @@ class ScoreState extends State {
       texture: Luxe.resources.texture('assets/close.png')
     });
 
-    Luxe.input.bind_mouse('close', MouseButton.left );
+    Luxe.input.bind_mouse('click', MouseButton.left );
+  }
+  override function onleave<T>(_:T){
+    Constants.score = 0;
+    closeButton.destroy();
+    playButton.destroy();
+    scoreText.destroy();
   }
 
   override function oninputup(event_name:String , e : InputEvent) {
-    if ( event_name == 'close' ) {
+    if ( event_name == 'click' ) {
       if ( closeButton.point_inside_circle(e.mouse_event.pos) ) {
         Luxe.shutdown();
+      }
+      else if ( playButton.point_inside_circle(e.mouse_event.pos) ) {
+        this.machine.set('play',null,this);
       }
     }
   }
